@@ -172,7 +172,7 @@ class LocalGrouper(nn.Module):
                 mean = torch.mean(grouped_points, dim=2, keepdim=True)
             if self.normalize =="anchor":
                 mean = torch.cat([new_points, new_xyz],dim=-1) if self.use_xyz else new_points
-                mean = mean.unsqueeze(dim=-2)  # [B, npoint, 1, d+3]	
+                mean = mean.unsqueeze(dim=-2)  # [B, npoint, 1, d+3]
             std = torch.std((grouped_points-mean).reshape(B,-1),dim=-1,keepdim=True).unsqueeze(dim=-1).unsqueeze(dim=-1)
             grouped_points = (grouped_points-mean)/(std + 1e-5)
             grouped_points = self.affine_alpha*grouped_points + self.affine_beta
@@ -431,12 +431,14 @@ class PointMLP(nn.Module):
             x = self.decode_list[i](xyz_list[i+1], xyz_list[i], x_list[i+1],x)
 
         # here is the global context
+        import pdb; pdb.set_trace()
         gmp_list = []
         for i in range(len(x_list)):
             gmp_list.append(F.adaptive_max_pool1d(self.gmp_map_list[i](x_list[i]), 1))
         global_context = self.gmp_map_end(torch.cat(gmp_list, dim=1)) # [b, gmp_dim, 1]
 
         #here is the cls_token
+        import pdb; pdb.set_trace()
         cls_token = self.cls_map(cls_label.unsqueeze(dim=-1))  # [b, cls_dim, 1]
         x = torch.cat([x, global_context.repeat([1, 1, x.shape[-1]]), cls_token.repeat([1, 1, x.shape[-1]])], dim=1)
         x = self.classifier(x)
