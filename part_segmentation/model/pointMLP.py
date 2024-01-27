@@ -241,9 +241,7 @@ class PreExtraction(nn.Module):
         for _ in range(blocks):
             operation.append(
                 ConvBNReLURes1D(out_channels, groups=groups, res_expansion=res_expansion,
-                                bias=bias, activation=activation))
-            operation.append(  # todo
-                SelfAttention(in_channels**2, in_channels**2)
+                                bias=bias, activation=activation)
             )
         self.operation = nn.Sequential(*operation)
 
