@@ -158,6 +158,7 @@ class Point_Transformer(nn.Module):
         self.sa1.apply(init_weights)
         self.sa2.apply(init_weights)
 
+        # TODO use this part as agregation function
         ## Create Local-Global Attention
         ##  A^LG
         self.decoder_layer = nn.TransformerDecoderLayer(self.d_model, nhead=8)

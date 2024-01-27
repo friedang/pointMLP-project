@@ -241,7 +241,9 @@ class PreExtraction(nn.Module):
         for _ in range(blocks):
             operation.append(
                 ConvBNReLURes1D(out_channels, groups=groups, res_expansion=res_expansion,
-                                bias=bias, activation=activation)
+                                bias=bias, activation=activation))
+            operation.append(  # todo
+                SelfAttention(out_channels, out_channels)
             )
         self.operation = nn.Sequential(*operation)
 
@@ -325,6 +327,22 @@ class PointNetFeaturePropagation(nn.Module):
         return new_points
 
 
+class SelfAttention(nn.Module):
+    def __init__(self, input_dim, output_dim):
+        super(SelfAttention, self).__init__()
+        self.key_conv = nn.Conv2d(input_dim, output_dim, 3, 2)
+        self.values_conv = nn.Conv2d(input_dim, output_dim, 3, 2)
+        self.query_conv = nn.Conv2d(input_dim, output_dim, 3, 2)
+        self.scale = input_dim ** -0.5
+
+    def forward(self, input_tensor):
+        # Compute attention scores
+        attention_scores = torch.matmul(self.key_conv(input_tensor), self.values_conv(input_tensor.transpose(1, 2)) * self.scale)
+        # Apply softmax to get attention weights
+        attention_weights = F.softmax(attention_scores, dim=-1)
+        # Apply attention weights to input tensor
+        output = torch.matmul(attention_weights, self.query_conv(input_tensor))
+        return output
 
 
 class PointMLP(nn.Module):
@@ -395,6 +413,7 @@ class PointMLP(nn.Module):
         self.gmp_map_list = nn.ModuleList()
         for en_dim in en_dims:
             self.gmp_map_list.append(ConvBNReLU1D(en_dim, gmp_dim, bias=bias, activation=activation))
+            self.gmp_map_list.append(SelfAttention(gmp_dim, gmp_dim))
         self.gmp_map_end = ConvBNReLU1D(gmp_dim*len(en_dims), gmp_dim, bias=bias, activation=activation)
 
         # classifier
@@ -431,15 +450,16 @@ class PointMLP(nn.Module):
             x = self.decode_list[i](xyz_list[i+1], xyz_list[i], x_list[i+1],x)
 
         # here is the global context
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         gmp_list = []
         for i in range(len(x_list)):
             gmp_list.append(F.adaptive_max_pool1d(self.gmp_map_list[i](x_list[i]), 1))
-        global_context = self.gmp_map_end(torch.cat(gmp_list, dim=1)) # [b, gmp_dim, 1]
+        global_context = self.gmp_map_end(torch.cat(gmp_list, dim=1)) # [b, gmp_dim, 1] torch.Size([32, 64, 1])
 
         #here is the cls_token
         import pdb; pdb.set_trace()
-        cls_token = self.cls_map(cls_label.unsqueeze(dim=-1))  # [b, cls_dim, 1]
+        # x.shape torch.Size([32, 128, 2048])
+        cls_token = self.cls_map(cls_label.unsqueeze(dim=-1))  # [b, cls_dim, 1] torch.Size([32, 64, 1])
         x = torch.cat([x, global_context.repeat([1, 1, x.shape[-1]]), cls_token.repeat([1, 1, x.shape[-1]])], dim=1)
         x = self.classifier(x)
         x = F.log_softmax(x, dim=1)
