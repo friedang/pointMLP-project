@@ -243,7 +243,7 @@ class PreExtraction(nn.Module):
                 ConvBNReLURes1D(out_channels, groups=groups, res_expansion=res_expansion,
                                 bias=bias, activation=activation))
             operation.append(  # todo
-                SelfAttention(out_channels, out_channels)
+                SelfAttention(in_channels**2, in_channels**2)
             )
         self.operation = nn.Sequential(*operation)
 
@@ -337,6 +337,7 @@ class SelfAttention(nn.Module):
 
     def forward(self, input_tensor):
         # Compute attention scores
+        import pdb; pdb.set_trace()
         attention_scores = torch.matmul(self.key_conv(input_tensor), self.values_conv(input_tensor.transpose(1, 2)) * self.scale)
         # Apply softmax to get attention weights
         attention_weights = F.softmax(attention_scores, dim=-1)
