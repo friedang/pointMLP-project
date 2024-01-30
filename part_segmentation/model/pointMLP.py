@@ -412,7 +412,7 @@ class PointMLP(nn.Module):
         for en_dim in en_dims:
             self.gmp_map_list.append(nn.Sequential(
                 ConvBNReLU1D(en_dim, gmp_dim, bias=bias, activation=activation),
-                SelfAttention(gmp_dim, gmp_dim, kernel=1, stride=1)))
+                SelfAttention(gmp_dim, gmp_dim, kernel=2, stride=2)))
         self.gmp_map_end = ConvBNReLU1D(gmp_dim*len(en_dims), gmp_dim, bias=bias, activation=activation)
 
         # classifier
@@ -451,7 +451,8 @@ class PointMLP(nn.Module):
         # here is the global context
         gmp_list = []
         for i in range(len(x_list)):
-            gmp_list.append(F.adaptive_max_pool1d(self.gmp_map_list[i](x_list[i]), 1))
+            gmp_list.append(self.gmp_map_list[i](x_list[i]))
+            # gmp_list.append(F.adaptive_max_pool1d(self.gmp_map_list[i](x_list[i]), 1))
         global_context = self.gmp_map_end(torch.cat(gmp_list, dim=1)) # [b, gmp_dim, 1] torch.Size([32, 64, 1])
 
         #here is the cls_token x.shape torch.Size([32, 128, 2048])
