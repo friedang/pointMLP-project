@@ -128,3 +128,8 @@ dmypy.json
 # Pyre type checker
 .pyre/
 .DS_Store
+
+#checkpoints
+part_segmentation/checkpoints/
+part_segmentation/data/
+Anaconda3-2020.07-Linux-x86_64.sh

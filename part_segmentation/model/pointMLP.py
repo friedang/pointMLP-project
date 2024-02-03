@@ -142,7 +142,7 @@ class LocalGrouper(nn.Module):
             self.normalize = normalize.lower()
         else:
             self.normalize = None
-        if self.normalize not in ["center", "anchor"]:
+        if self.normalize not in ["center", "anchor","neighborhood_standardization","batch","layer","nonlinear"]:
             print(f"Unrecognized normalize parameter (self.normalize), set to None. Should be one of [center, anchor].")
             self.normalize = None
         if self.normalize is not None:
@@ -169,13 +169,41 @@ class LocalGrouper(nn.Module):
             grouped_points = torch.cat([grouped_points, grouped_xyz],dim=-1)  # [B, npoint, k, d+3]
         if self.normalize is not None:
             if self.normalize =="center":
+                # print('Normalization technique: center')
                 mean = torch.mean(grouped_points, dim=2, keepdim=True)
+                std = torch.std((grouped_points-mean).reshape(B,-1),dim=-1,keepdim=True).unsqueeze(dim=-1).unsqueeze(dim=-1)
+                grouped_points = (grouped_points-mean)/(std + 1e-5)
+
             if self.normalize =="anchor":
+                # print('Normalization technique: anchor')
                 mean = torch.cat([new_points, new_xyz],dim=-1) if self.use_xyz else new_points
                 mean = mean.unsqueeze(dim=-2)  # [B, npoint, 1, d+3]	
-            std = torch.std((grouped_points-mean).reshape(B,-1),dim=-1,keepdim=True).unsqueeze(dim=-1).unsqueeze(dim=-1)
-            grouped_points = (grouped_points-mean)/(std + 1e-5)
+                std = torch.std((grouped_points-mean).reshape(B,-1),dim=-1,keepdim=True).unsqueeze(dim=-1).unsqueeze(dim=-1)
+                grouped_points = (grouped_points-mean)/(std + 1e-5)
+
+            # Option 1: Neighborhood Standardization
+            if self.normalize =='neighborhood_standardization':
+                # print('Normalization technique: neighborhood_standardization')
+                mean = grouped_points.mean(dim=-2, keepdim=True)
+                std = grouped_points.std(dim=-2, keepdim=True)
+                grouped_points = (grouped_points-mean)/(std + 1e-5)
+
+            # Option 3: Layer Normalization
+            elif self.normalize == 'layer':
+                # print('Normalization technique: layer')
+                mean = torch.mean(grouped_points, dim=-1, keepdim=True)
+                std = torch.std(grouped_points, dim=-1, keepdim=True).expand_as(mean)
+                # print('mean std',mean.shape,std.shape)
+                grouped_points = (grouped_points-mean)/(std + 1e-5)
+
+
+            # Option 4: Non-linearity
+            elif self.normalize == 'nonlinear':
+                # print('Normalization technique: Non-linearity')
+                grouped_points = F.relu(grouped_points)
+
             grouped_points = self.affine_alpha*grouped_points + self.affine_beta
+
 
         new_points = torch.cat([grouped_points, new_points.view(B, S, 1, -1).repeat(1, 1, self.kneighbors, 1)], dim=-1)
         return new_xyz, new_points
@@ -447,7 +475,7 @@ class PointMLP(nn.Module):
 
 def pointMLP(num_classes=50, **kwargs) -> PointMLP:
     return PointMLP(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
-                 activation="relu", bias=True, use_xyz=True, normalize="anchor",
+                 activation="relu", bias=True, use_xyz=True, normalize = 'layer',
                  dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
                  k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
                  de_dims=[512, 256, 128, 128], de_blocks=[4,4,4,4],
