@@ -343,6 +343,30 @@ class SelfAttention(nn.Module):
         return output
 
 
+class MultiHeadAttention(nn.Module):
+    def __init__(self, input_dim, output_dim, num_heads=3, kernel=2, stride=2):
+        super(MultiHeadAttention, self).__init__()
+        self.head_dim = output_dim // num_heads
+        self.num_heads = num_heads
+
+        # Initialize multiple instances of SelfAttention
+        self.attention_heads = nn.ModuleList([
+            SelfAttention(input_dim, self.head_dim, kernel, stride) for _ in range(num_heads)
+        ])
+
+        self.fc_concat = nn.Linear(self.head_dim * num_heads, output_dim)
+
+    def forward(self, input_tensor):
+        # Compute attention for each head
+        attention_outputs = [head(input_tensor)
+                             for head in self.attention_heads]  # List of [batch_size, seq_len, head_dim]
+
+        # Concatenate attention outputs along the head dimension
+        concatenated_attention = torch.cat(attention_outputs, dim=-1)  # [batch_size, seq_len, head_dim * num_heads]
+
+        return self.fc_concat(concatenated_attention)  # [batch_size, seq_len, output_dim]
+
+
 class PointMLP(nn.Module):
     def __init__(self, num_classes=50,points=2048, embed_dim=64, groups=1, res_expansion=1.0,
                  activation="relu", bias=True, use_xyz=True, normalize="anchor",
@@ -412,7 +436,7 @@ class PointMLP(nn.Module):
         for en_dim in en_dims:
             self.gmp_map_list.append(nn.Sequential(
                 ConvBNReLU1D(en_dim, gmp_dim, bias=bias, activation=activation),
-                SelfAttention(gmp_dim, gmp_dim, kernel=2, stride=2)))
+                MultiHeadAttention(gmp_dim, gmp_dim, num_heads=3, kernel=2, stride=2)))
         self.gmp_map_end = ConvBNReLU1D(gmp_dim*len(en_dims), gmp_dim, bias=bias, activation=activation)
 
         # classifier
