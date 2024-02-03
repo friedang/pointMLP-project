@@ -328,7 +328,7 @@ class PointNetFeaturePropagation(nn.Module):
 
 
 class PointMLP(nn.Module):
-    def __init__(self, num_classes=13,points=2048, embed_dim=64, groups=1, res_expansion=1.0,
+    def __init__(self, num_classes=50,points=2048, embed_dim=64, groups=1, res_expansion=1.0,
                  activation="relu", bias=True, use_xyz=True, normalize="anchor",
                  dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
                  k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
@@ -399,16 +399,14 @@ class PointMLP(nn.Module):
 
         # classifier
         self.classifier = nn.Sequential(
-            #nn.Conv1d(gmp_dim+cls_dim+de_dims[-1], 128, 1, bias=bias),
-            nn.Conv1d(128+gmp_dim, 64, 1, bias=bias),
-            nn.BatchNorm1d(64),
+            nn.Conv1d(gmp_dim+cls_dim+de_dims[-1], 128, 1, bias=bias),
+            nn.BatchNorm1d(128),
             nn.Dropout(),
-            nn.Conv1d(64, num_classes, 1, bias=bias)
+            nn.Conv1d(128, num_classes, 1, bias=bias)
         )
         self.en_dims = en_dims
 
-    #def forward(self, x, norm_plt, cls_label):
-    def forward(self, x, norm_plt):
+    def forward(self, x, norm_plt, cls_label):
         xyz = x.permute(0, 2, 1)
         x = torch.cat([x,norm_plt],dim=1)
         x = self.embedding(x)  # B,D,N
@@ -439,9 +437,8 @@ class PointMLP(nn.Module):
         global_context = self.gmp_map_end(torch.cat(gmp_list, dim=1)) # [b, gmp_dim, 1]
 
         #here is the cls_token
-        #cls_token = self.cls_map(cls_label.unsqueeze(dim=-1))  # [b, cls_dim, 1]
-        #x = torch.cat([x, global_context.repeat([1, 1, x.shape[-1]]), cls_token.repeat([1, 1, x.shape[-1]])], dim=1)
-        x = torch.cat([x, global_context.repeat([1, 1, x.shape[-1]])], dim=1)
+        cls_token = self.cls_map(cls_label.unsqueeze(dim=-1))  # [b, cls_dim, 1]
+        x = torch.cat([x, global_context.repeat([1, 1, x.shape[-1]]), cls_token.repeat([1, 1, x.shape[-1]])], dim=1)
         x = self.classifier(x)
         x = F.log_softmax(x, dim=1)
         x = x.permute(0, 2, 1)
@@ -462,7 +459,6 @@ if __name__ == '__main__':
     norm = torch.rand(2, 3, 2048)
     cls_label = torch.rand([2, 16])
     print("===> testing modelD ...")
-    #model = pointMLP(50)
-    model = pointMLP(13)
-    out = model(data, norm)  # [2,2048,50]
+    model = pointMLP(50)
+    out = model(data, cls_label)  # [2,2048,50]
     print(out.shape)
