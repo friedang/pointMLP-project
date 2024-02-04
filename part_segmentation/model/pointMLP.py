@@ -1,3 +1,5 @@
+Schneller finden, was Sie suchen …
+Die Startseite ist Ihre neue Landingpage, auf der die relevantesten Dateien und Ordner angezeigt werden
 
 import torch
 import torch.nn as nn
@@ -326,7 +328,7 @@ class PointNetFeaturePropagation(nn.Module):
 
 
 class SelfAttention(nn.Module):
-    def __init__(self, input_dim, output_dim, kernel=2, stride=2):
+    def __init__(self, input_dim, output_dim, kernel=1, stride=1):
         super(SelfAttention, self).__init__()
         self.key_conv = nn.Conv1d(input_dim, output_dim, kernel, stride)
         self.values_conv = nn.Conv1d(input_dim, output_dim, kernel, stride)
@@ -340,21 +342,28 @@ class SelfAttention(nn.Module):
         attention_weights = F.softmax(attention_scores, dim=-1)
         # Apply attention weights to input tensor
         output = torch.matmul(attention_weights, self.values_conv(input_tensor))
+
         return output
 
 
 class MultiHeadAttention(nn.Module):
-    def __init__(self, input_dim, output_dim, num_heads=3, kernel=2, stride=2):
+    def __init__(self, input_dim, output_dim, anchors, num_heads=8, no_pooling=False):
         super(MultiHeadAttention, self).__init__()
-        self.head_dim = output_dim // num_heads
+        # self.head_dim = output_dim // num_heads
         self.num_heads = num_heads
 
         # Initialize multiple instances of SelfAttention
         self.attention_heads = nn.ModuleList([
-            SelfAttention(input_dim, self.head_dim, kernel, stride) for _ in range(num_heads)
+            SelfAttention(input_dim, output_dim, 1, 1) for _ in range(num_heads)
         ])
+        if no_pooling:
+            self.fc_concat = nn.Sequential(
+                nn.Linear(anchors * num_heads, anchors // 2),
+                nn.Linear(anchors // 2, 1)
+            )
+        else:
+            self.fc_concat = nn.Linear(anchors * num_heads, anchors * num_heads)
 
-        self.fc_concat = nn.Linear(self.head_dim * num_heads, output_dim)
 
     def forward(self, input_tensor):
         # Compute attention for each head
@@ -433,10 +442,13 @@ class PointMLP(nn.Module):
         )
         # global max pooling mapping
         self.gmp_map_list = nn.ModuleList()
+        feat_sizes = [8, 32, 128, 512, 2048]
+        i = 0
         for en_dim in en_dims:
             self.gmp_map_list.append(nn.Sequential(
                 ConvBNReLU1D(en_dim, gmp_dim, bias=bias, activation=activation),
-                MultiHeadAttention(gmp_dim, gmp_dim, num_heads=3, kernel=2, stride=2)))
+                MultiHeadAttention(gmp_dim, gmp_dim, anchors=feat_sizes[i], no_pooling=False)))
+            i += 1
         self.gmp_map_end = ConvBNReLU1D(gmp_dim*len(en_dims), gmp_dim, bias=bias, activation=activation)
 
         # classifier
@@ -475,8 +487,8 @@ class PointMLP(nn.Module):
         # here is the global context
         gmp_list = []
         for i in range(len(x_list)):
-            gmp_list.append(self.gmp_map_list[i](x_list[i]))
-            # gmp_list.append(F.adaptive_max_pool1d(self.gmp_map_list[i](x_list[i]), 1))
+            # gmp_list.append(self.gmp_map_list[i](x_list[i]))
+            gmp_list.append(F.adaptive_max_pool1d(self.gmp_map_list[i](x_list[i]), 1))
         global_context = self.gmp_map_end(torch.cat(gmp_list, dim=1)) # [b, gmp_dim, 1] torch.Size([32, 64, 1])
 
         #here is the cls_token x.shape torch.Size([32, 128, 2048])
