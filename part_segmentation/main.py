@@ -222,12 +222,13 @@ def train_epoch(train_loader, model, opt, scheduler, epoch, num_part, num_classe
         
         norm_plt = normal
 
-        points, target, norm_plt = Variable(points.float()), Variable(target.long()), Variable(norm_plt.float())
+        points, target, norm_plt, color = Variable(points.float()), Variable(target.long()), Variable(norm_plt.float()), Variable(color.float())
         
         
         points = points.transpose(2, 1)
         norm_plt = norm_plt.transpose(2, 1)
-        points, target, norm_plt = points.cuda(non_blocking=True), target.cuda(non_blocking=True), norm_plt.cuda(non_blocking=True)
+        color = color.transpose(2, 1)
+        points, target, norm_plt, color = points.cuda(non_blocking=True), target.cuda(non_blocking=True), norm_plt.cuda(non_blocking=True), color.cuda(non_blocking=True)
         
         # target: b,n
         # print( "SHAPE INFOS: \n")
@@ -237,7 +238,7 @@ def train_epoch(train_loader, model, opt, scheduler, epoch, num_part, num_classe
         # print( "SHAPE NORM_PLT: ", norm_plt.shape)
 
         #seg_pred = model(points, norm_plt, to_categorical(label, num_classes))  # seg_pred: b,n,50
-        seg_pred = model(points, norm_plt)  # seg_pred: b,n,50
+        seg_pred = model(points, norm_plt, color)  # seg_pred: b,n,50
         #print( "SHAPE SEG PREDICTION: ", seg_pred.shape)
         num_part = 13
         loss = F.nll_loss(seg_pred.contiguous().view(-1, num_part), target.view(-1, 1)[:, 0])
