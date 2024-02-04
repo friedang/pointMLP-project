@@ -98,7 +98,8 @@ def train(args, io):
     ###    NEW DATALOADAER #############################
 
     #root = 'data/new/stanford_indoor3d/'
-    root = 'data/custom_s3/'
+    # root = 'data/custom_s3/'
+    root = '/cluster/51/pointMLP_data/data/custom_s3/'
 
     NUM_CLASSES = 13
     NUM_POINT = 2048
@@ -369,7 +370,9 @@ def test(args, io):
    # test_data = PartNormalDataset(npoints=2048, split='test', normalize=False)
 
     #root = 'data/new/stanford_indoor3d/'
-    root = 'data/custom_s3/'
+    # root = 'data/custom_s3/'
+    root = '/cluster/51/pointMLP_data/data/custom_s3/'
+
     NUM_CLASSES = 13
     NUM_POINT = 2048
 

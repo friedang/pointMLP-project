@@ -1555,3 +1555,13 @@ Test 126, loss: 0.191204, test acc: 0.945354  test ins_iou: 0.856327
 Learning rate: 0.000375
 Train 127, loss: 0.067871, train acc: 0.973170, train ins_iou: 0.908285
 Test 127, loss: 0.192648, test acc: 0.944884  test ins_iou: 0.855382
+Namespace(batch_size=16, epochs=30, eval=False, exp_name='pointMLP_demo1', lr=0.03, manual_seed=None, model='pointMLP', model_type='insiou', momentum=0.9, no_cuda=False, num_points=2048, resume=False, scheduler='step', step=40, test_batch_size=16, use_sgd=False, workers=12)
+Using CPU
+Namespace(batch_size=16, epochs=30, eval=False, exp_name='pointMLP_demo1', lr=0.03, manual_seed=None, model='pointMLP', model_type='insiou', momentum=0.9, no_cuda=False, num_points=2048, resume=False, scheduler='step', step=40, test_batch_size=16, use_sgd=False, workers=12)
+Using CPU
+Namespace(batch_size=16, epochs=30, eval=False, exp_name='pointMLP_demo1', lr=0.03, manual_seed=None, model='pointMLP', model_type='insiou', momentum=0.9, no_cuda=False, num_points=2048, resume=False, scheduler='step', step=40, test_batch_size=16, use_sgd=False, workers=12)
+Using CPU
+Namespace(batch_size=16, epochs=30, eval=False, exp_name='pointMLP_demo1', lr=0.03, manual_seed=None, model='pointMLP', model_type='insiou', momentum=0.9, no_cuda=False, num_points=2048, resume=False, scheduler='step', step=40, test_batch_size=16, use_sgd=False, workers=12)
+Using CPU
+Namespace(batch_size=16, epochs=30, eval=False, exp_name='pointMLP_demo1', lr=0.03, manual_seed=None, model='pointMLP', model_type='insiou', momentum=0.9, no_cuda=False, num_points=2048, resume=False, scheduler='step', step=40, test_batch_size=16, use_sgd=False, workers=12)
+Using CPU
