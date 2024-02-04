@@ -325,6 +325,52 @@ class PointNetFeaturePropagation(nn.Module):
         return new_points
 
 
+class SelfAttention(nn.Module):
+    def __init__(self, input_dim, output_dim, kernel=1, stride=1):
+        super(SelfAttention, self).__init__()
+        self.key_conv = nn.Conv1d(input_dim, output_dim, kernel, stride)
+        self.values_conv = nn.Conv1d(input_dim, output_dim, kernel, stride)
+        self.query_conv = nn.Conv1d(input_dim, output_dim, kernel, stride)
+        self.scale = input_dim ** -0.5
+
+    def forward(self, input_tensor):  # torch.Size([32, 64, 8]
+        # Compute attention scores
+        attention_scores = torch.matmul(self.key_conv(input_tensor), self.query_conv(input_tensor).transpose(1, 2)) * self.scale
+        # Apply softmax to get attention weights
+        attention_weights = F.softmax(attention_scores, dim=-1)
+        # Apply attention weights to input tensor
+        output = torch.matmul(attention_weights, self.values_conv(input_tensor))
+
+        return output
+
+
+class MultiHeadAttention(nn.Module):
+    def __init__(self, input_dim, output_dim, anchors, num_heads=5, no_pooling=False):
+        super(MultiHeadAttention, self).__init__()
+        # self.head_dim = output_dim // num_heads
+        self.num_heads = num_heads
+
+        # Initialize multiple instances of SelfAttention
+        self.attention_heads = nn.ModuleList([
+            SelfAttention(input_dim, output_dim, 1, 1) for _ in range(num_heads)
+        ])
+        if no_pooling:
+            self.fc_concat = nn.Sequential(
+                nn.Linear(anchors * num_heads, anchors // 2),
+                nn.Linear(anchors // 2, 1)
+            )
+        else:
+            self.fc_concat = nn.Linear(anchors * num_heads, anchors * num_heads)
+
+    def forward(self, input_tensor):
+        # Compute attention for each head
+        attention_outputs = [head(input_tensor)
+                             for head in self.attention_heads]  # List of [batch_size, seq_len, head_dim]
+
+        # Concatenate attention outputs along the head dimension
+        concatenated_attention = torch.cat(attention_outputs, dim=-1)  # [batch_size, seq_len, head_dim * num_heads]
+
+        return self.fc_concat(concatenated_attention)  # [batch_size, seq_len, output_dim]
 
 
 class PointMLP(nn.Module):
@@ -386,16 +432,22 @@ class PointMLP(nn.Module):
 
         self.act = get_activation(activation)
 
-        # color feature mapping
+        # class label mapping
         self.col_map = nn.Sequential(
             ConvBNReLU1D(3, cls_dim, bias=bias, activation=activation),
             ConvBNReLU1D(cls_dim, cls_dim, bias=bias, activation=activation)
         )
         # global max pooling mapping
         self.gmp_map_list = nn.ModuleList()
+        feat_sizes = [8, 32, 128, 512, 2048]
+        i = 0
         for en_dim in en_dims:
-            self.gmp_map_list.append(ConvBNReLU1D(en_dim, gmp_dim, bias=bias, activation=activation))
-        self.gmp_map_end = ConvBNReLU1D(gmp_dim*len(en_dims), gmp_dim, bias=bias, activation=activation)
+            self.gmp_map_list.append(nn.Sequential(
+                ConvBNReLU1D(en_dim, gmp_dim, bias=bias, activation=activation),
+                MultiHeadAttention(gmp_dim, gmp_dim, anchors=feat_sizes[i], no_pooling=True)))
+            i += 1
+        self.gmp_map_end = ConvBNReLU1D(gmp_dim * len(en_dims), gmp_dim, bias=bias,
+                                        activation=activation)
 
         # classifier
         self.classifier = nn.Sequential(
@@ -435,12 +487,13 @@ class PointMLP(nn.Module):
         # here is the global context
         gmp_list = []
         for i in range(len(x_list)):
-            gmp_list.append(F.adaptive_max_pool1d(self.gmp_map_list[i](x_list[i]), 1))
+            gmp_list.append(self.gmp_map_list[i](x_list[i]))
+            # Use the following with max pooling instead if no_pooling=False in Multihead-Attention
+            # gmp_list.append(F.adaptive_max_pool1d(self.gmp_map_list[i](x_list[i]), 1))
         global_context = self.gmp_map_end(torch.cat(gmp_list, dim=1)) # [b, gmp_dim, 1]
 
-        # here is the color context
+        #here is the cls_token
         color_context = F.adaptive_max_pool1d(self.col_map(color), 1)  # [b, cls_dim, 1]
-        
         x = torch.cat([x, global_context.repeat([1, 1, x.shape[-1]]), color_context.repeat([1, 1, x.shape[-1]])], dim=1)
         # x = torch.cat([x, global_context.repeat([1, 1, x.shape[-1]])], dim=1)
         x = self.classifier(x)
