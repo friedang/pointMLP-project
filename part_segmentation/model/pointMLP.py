@@ -1,6 +1,3 @@
-Schneller finden, was Sie suchen …
-Die Startseite ist Ihre neue Landingpage, auf der die relevantesten Dateien und Ordner angezeigt werden
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
