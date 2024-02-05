@@ -345,7 +345,7 @@ class SelfAttention(nn.Module):
 
 
 class MultiHeadAttention(nn.Module):
-    def __init__(self, input_dim, output_dim, anchors, num_heads=5, no_pooling=False):
+    def __init__(self, input_dim, output_dim, anchors, num_heads=8, no_pooling=False):
         super(MultiHeadAttention, self).__init__()
         # self.head_dim = output_dim // num_heads
         self.num_heads = num_heads
@@ -356,9 +356,8 @@ class MultiHeadAttention(nn.Module):
         ])
         if no_pooling:
             self.fc_concat = nn.Sequential(
-                nn.Linear(anchors * num_heads, anchors // 2),
-                nn.Linear(anchors // 2, 1)
-            )
+                nn.Linear(anchors * num_heads, 64),
+                )
         else:
             self.fc_concat = nn.Linear(anchors * num_heads, anchors * num_heads)
 
@@ -444,7 +443,7 @@ class PointMLP(nn.Module):
         for en_dim in en_dims:
             self.gmp_map_list.append(nn.Sequential(
                 ConvBNReLU1D(en_dim, gmp_dim, bias=bias, activation=activation),
-                MultiHeadAttention(gmp_dim, gmp_dim, anchors=feat_sizes[i], no_pooling=True)))
+                MultiHeadAttention(gmp_dim, gmp_dim, anchors=feat_sizes[i], no_pooling=False)))
             i += 1
         self.gmp_map_end = ConvBNReLU1D(gmp_dim * len(en_dims), gmp_dim, bias=bias,
                                         activation=activation)
@@ -493,8 +492,8 @@ class PointMLP(nn.Module):
         global_context = self.gmp_map_end(torch.cat(gmp_list, dim=1)) # [b, gmp_dim, 1]
 
         #here is the cls_token
-        color_context = F.adaptive_max_pool1d(self.col_map(color), 1)  # [b, cls_dim, 1]
-        x = torch.cat([x, global_context.repeat([1, 1, x.shape[-1]]), color_context.repeat([1, 1, x.shape[-1]])], dim=1)
+        color_context = self.col_map(color)
+        x = torch.cat([x, global_context.repeat([1, 1, x.shape[-1]]), color_context], dim=1)
         # x = torch.cat([x, global_context.repeat([1, 1, x.shape[-1]])], dim=1)
         x = self.classifier(x)
         x = F.log_softmax(x, dim=1)

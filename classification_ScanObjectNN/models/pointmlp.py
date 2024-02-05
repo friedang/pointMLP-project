@@ -176,7 +176,7 @@ class LocalGrouper(nn.Module):
                 mean = mean.unsqueeze(dim=-2)  # [B, npoint, 1, d+3]
             std = torch.std((grouped_points-mean).reshape(B,-1),dim=-1,keepdim=True).unsqueeze(dim=-1).unsqueeze(dim=-1)
             grouped_points = (grouped_points-mean)/(std + 1e-5)
-            grouped_points = self.affine_alpha*grouped_points + self.affine_beta
+            grouped_points = self.affine_alpha*grouped_points + self.affine_beta #todo
 
         new_points = torch.cat([grouped_points, new_points.view(B, S, 1, -1).repeat(1, 1, self.kneighbors, 1)], dim=-1)
         return new_xyz, new_points
