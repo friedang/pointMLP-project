@@ -356,10 +356,11 @@ class MultiHeadAttention(nn.Module):
         ])
         if no_pooling:
             self.fc_concat = nn.Sequential(
-                nn.Linear(anchors * num_heads, 2048),
-                )
+                nn.Linear(anchors * num_heads, 2048))
         else:
-            self.fc_concat = nn.Linear(anchors * num_heads, anchors * num_heads)
+            self.fc_concat = nn.Sequential(
+                nn.Linear(anchors * num_heads, anchors * num_heads // 2),
+                nn.Linear(anchors * num_heads, 1),)
 
     def forward(self, input_tensor):
         # Compute attention for each head
@@ -431,10 +432,11 @@ class PointMLP(nn.Module):
 
         self.act = get_activation(activation)
 
-        # class label mapping
+        # color mapping
         self.col_map = nn.Sequential(
             ConvBNReLU1D(3, cls_dim, bias=bias, activation=activation),
-            ConvBNReLU1D(cls_dim, cls_dim, bias=bias, activation=activation)
+            ConvBNReLU1D(cls_dim, cls_dim, bias=bias, activation=activation),
+            MultiHeadAttention(gmp_dim, gmp_dim, anchors=2048, no_pooling)
         )
         # global max pooling mapping
         self.gmp_map_list = nn.ModuleList()
