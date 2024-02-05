@@ -490,7 +490,7 @@ class PointMLP(nn.Module):
 
 def pointMLP(num_classes=50, **kwargs) -> PointMLP:
     return PointMLP(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
-                 activation="relu", bias=True, use_xyz=True, normalize="nonlinear",
+                 activation="relu", bias=True, use_xyz=True, normalize="anchor",
                  dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
                  k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
                  de_dims=[512, 256, 128, 128], de_blocks=[4,4,4,4],
