@@ -461,7 +461,7 @@ def pointMLP(num_classes=50, **kwargs) -> PointMLP:
 if __name__ == '__main__':
     data = torch.rand(2, 3, 2048)
     norm = torch.rand(2, 3, 2048)
-    cls_label = torch.rand([2, 16])
+    #cls_label = torch.rand([2, 13])
     print("===> testing modelD ...")
     #model = pointMLP(50)
     model = pointMLP(13)

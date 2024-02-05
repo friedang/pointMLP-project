@@ -301,12 +301,13 @@ def test_epoch(test_loader, model, epoch, num_part, num_classes, io):
    
     for batch_id, (points, target, norm_plt, color) in tqdm(enumerate(test_loader), total=len(test_loader), smoothing=0.9):
         batch_size, num_point, _ = points.size()
-        points, target, norm_plt = Variable(points.float()),  Variable(target.long()), Variable(norm_plt.float())
+        points, target, norm_plt,color = Variable(points.float()),  Variable(target.long()), Variable(norm_plt.float()), Variable(norm_plt.float())
         
         points = points.transpose(2, 1)
         norm_plt = norm_plt.transpose(2, 1)
-        points, target, norm_plt = points.cuda(non_blocking=True), target.cuda(non_blocking=True), norm_plt.cuda(non_blocking=True)
-        seg_pred = model(points, norm_plt)  # b,n,50
+        color = color.transpose(2, 1)
+        points, target, norm_plt, color = points.cuda(non_blocking=True), target.cuda(non_blocking=True), norm_plt.cuda(non_blocking=True),color.cuda(non_blocking=True)
+        seg_pred = model(points, norm_plt, color)  # b,n,50
 
         # instance iou without considering the class average at each batch_size:
         batch_shapeious = compute_overall_iou(seg_pred, target, num_part)  # [b]
@@ -406,14 +407,15 @@ def test(args, io):
 
     for batch_id, (points, target, norm_plt, color) in tqdm(enumerate(test_loader), total=len(test_loader), smoothing=0.9):
         batch_size, num_point, _ = points.size()
-        points, target, norm_plt = Variable(points.float()), Variable(target.long()), Variable(norm_plt.float())
+        points, target, norm_plt, color = Variable(points.float()), Variable(target.long()), Variable(norm_plt.float()), Variable(color.float())
         
         points = points.transpose(2, 1)
         norm_plt = norm_plt.transpose(2, 1)
-        points,  target, norm_plt = points.cuda(non_blocking=True), target.cuda(non_blocking=True), norm_plt.cuda(non_blocking=True)
+        color = color.transpose(2, 1)
+        points,  target, norm_plt, color = points.cuda(non_blocking=True), target.cuda(non_blocking=True), norm_plt.cuda(non_blocking=True), color.cuda(non_blocking=True)
 
         with torch.no_grad():
-            seg_pred = model(points, norm_plt)  # b,n,50
+            seg_pred = model(points, norm_plt, color)  # b,n,50
 
         # instance iou without considering the class average at each batch_size:
         batch_shapeious = compute_overall_iou(seg_pred, target, num_part)  # [b]
@@ -484,7 +486,7 @@ if __name__ == "__main__":
                         help='enables CUDA training')
     parser.add_argument('--manual_seed', type=int, metavar='S',
                         help='random seed (default: 1)')
-    parser.add_argument('--eval', type=bool,  default=False,
+    parser.add_argument('--eval', type=bool,  default=True,
                         help='evaluate the model')
     parser.add_argument('--num_points', type=int, default=2048,
                         help='num of points to use')

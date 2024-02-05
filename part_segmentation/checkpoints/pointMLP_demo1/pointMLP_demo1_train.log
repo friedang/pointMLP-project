@@ -1555,3 +1555,423 @@ Test 126, loss: 0.191204, test acc: 0.945354  test ins_iou: 0.856327
 Learning rate: 0.000375
 Train 127, loss: 0.067871, train acc: 0.973170, train ins_iou: 0.908285
 Test 127, loss: 0.192648, test acc: 0.944884  test ins_iou: 0.855382
+Namespace(batch_size=16, epochs=30, eval=False, exp_name='pointMLP_demo1', lr=0.03, manual_seed=None, model='pointMLP', model_type='insiou', momentum=0.9, no_cuda=False, num_points=2048, resume=False, scheduler='step', step=40, test_batch_size=16, use_sgd=False, workers=12)
+Using CPU
+Namespace(batch_size=16, epochs=30, eval=False, exp_name='pointMLP_demo1', lr=0.03, manual_seed=None, model='pointMLP', model_type='insiou', momentum=0.9, no_cuda=False, num_points=2048, resume=False, scheduler='step', step=40, test_batch_size=16, use_sgd=False, workers=12)
+Using CPU
+Namespace(batch_size=16, epochs=30, eval=False, exp_name='pointMLP_demo1', lr=0.03, manual_seed=None, model='pointMLP', model_type='insiou', momentum=0.9, no_cuda=False, num_points=2048, resume=False, scheduler='step', step=40, test_batch_size=16, use_sgd=False, workers=12)
+Using GPU
+Learning rate: 0.030000
+Train 1, loss: 0.843822, train acc: 0.723497, train ins_iou: 0.566221
+Test 1, loss: 2.850315, test acc: 0.533200  test ins_iou: 0.562492
+Max Acc:0.53320
+Max instance iou:0.56249
+ceiling iou: 0.5653873
+floor iou: 0.56666374
+wall iou: 0.45620772
+beam iou: 0.0
+column iou: 0.48724526
+window iou: 0.46402407
+door iou: 0.42487335
+table iou: 0.47219443
+chair iou: 0.4813156
+sofa iou: 0.4839685
+bookcase iou: 0.39082673
+board iou: 0.41421854
+clutter iou: 0.48315114
+Max class iou:0.43770
+Learning rate: 0.030000
+Train 2, loss: 0.814544, train acc: 0.729158, train ins_iou: 0.576312
+Test 2, loss: 2.651967, test acc: 0.575949  test ins_iou: 0.542430
+Max Acc:0.57595
+Learning rate: 0.030000
+Train 3, loss: 0.765850, train acc: 0.744307, train ins_iou: 0.600577
+Test 3, loss: 2.369338, test acc: 0.544145  test ins_iou: 0.574398
+Max instance iou:0.57440
+ceiling iou: 0.57806534
+floor iou: 0.5798621
+wall iou: 0.47512296
+beam iou: 0.0
+column iou: 0.4585005
+window iou: 0.45405263
+door iou: 0.43210027
+table iou: 0.52818483
+chair iou: 0.53510964
+sofa iou: 0.4671468
+bookcase iou: 0.416371
+board iou: 0.43019402
+clutter iou: 0.4972535
+Max class iou:0.45015
+Learning rate: 0.030000
+Train 4, loss: 0.741044, train acc: 0.753768, train ins_iou: 0.610357
+Test 4, loss: 2.474926, test acc: 0.626562  test ins_iou: 0.593476
+Max Acc:0.62656
+Max instance iou:0.59348
+ceiling iou: 0.5967026
+floor iou: 0.5962622
+wall iou: 0.54198855
+beam iou: 0.0
+column iou: 0.3648077
+window iou: 0.39820278
+door iou: 0.5092615
+table iou: 0.5099998
+chair iou: 0.51699734
+sofa iou: 0.48922822
+bookcase iou: 0.40916693
+board iou: 0.45229703
+clutter iou: 0.5226065
+Max class iou:0.45442
+Learning rate: 0.030000
+Train 5, loss: 0.703702, train acc: 0.768684, train ins_iou: 0.625191
+Test 5, loss: 2.679946, test acc: 0.639553  test ins_iou: 0.609566
+Max Acc:0.63955
+Max instance iou:0.60957
+ceiling iou: 0.6115759
+floor iou: 0.61394197
+wall iou: 0.5410153
+beam iou: 0.0
+column iou: 0.47872293
+window iou: 0.5000396
+door iou: 0.47613847
+table iou: 0.52945757
+chair iou: 0.5334903
+sofa iou: 0.5116537
+bookcase iou: 0.43241367
+board iou: 0.47689894
+clutter iou: 0.49765107
+Max class iou:0.47715
+Learning rate: 0.030000
+Train 6, loss: 0.654722, train acc: 0.786576, train ins_iou: 0.645055
+Test 6, loss: 2.931339, test acc: 0.631911  test ins_iou: 0.605960
+Learning rate: 0.030000
+Train 7, loss: 0.622460, train acc: 0.795595, train ins_iou: 0.657936
+Test 7, loss: 2.979262, test acc: 0.659849  test ins_iou: 0.617405
+Max Acc:0.65985
+Max instance iou:0.61741
+ceiling iou: 0.6198603
+floor iou: 0.62161535
+wall iou: 0.56466854
+beam iou: 0.0
+column iou: 0.48426685
+window iou: 0.5001045
+door iou: 0.5089733
+table iou: 0.5254084
+chair iou: 0.5157078
+sofa iou: 0.4860027
+bookcase iou: 0.43788278
+board iou: 0.4940043
+clutter iou: 0.51093477
+Max class iou:0.48226
+Learning rate: 0.030000
+Train 8, loss: 0.594650, train acc: 0.806284, train ins_iou: 0.669678
+Test 8, loss: 2.643368, test acc: 0.642858  test ins_iou: 0.630484
+Max instance iou:0.63048
+ceiling iou: 0.6332568
+floor iou: 0.63478404
+wall iou: 0.5643479
+beam iou: 0.0
+column iou: 0.48555517
+window iou: 0.49218842
+door iou: 0.50945187
+table iou: 0.57812816
+chair iou: 0.61122704
+sofa iou: 0.5156853
+bookcase iou: 0.465776
+board iou: 0.49957746
+clutter iou: 0.5539694
+Max class iou:0.50338
+Learning rate: 0.030000
+Train 9, loss: 0.618906, train acc: 0.808306, train ins_iou: 0.669071
+Test 9, loss: 1231.327667, test acc: 0.518064  test ins_iou: 0.456437
+Learning rate: 0.030000
+Train 10, loss: 0.671989, train acc: 0.782409, train ins_iou: 0.638981
+Test 10, loss: 2.902573, test acc: 0.628390  test ins_iou: 0.605503
+Learning rate: 0.030000
+Train 11, loss: 0.599620, train acc: 0.804606, train ins_iou: 0.663809
+Test 11, loss: 2.768023, test acc: 0.635416  test ins_iou: 0.626056
+Learning rate: 0.030000
+Train 12, loss: 0.578138, train acc: 0.813095, train ins_iou: 0.674449
+Test 12, loss: 2.677881, test acc: 0.645614  test ins_iou: 0.616782
+Learning rate: 0.030000
+Train 13, loss: 0.591690, train acc: 0.810828, train ins_iou: 0.671249
+Test 13, loss: 2.513281, test acc: 0.634764  test ins_iou: 0.624559
+Learning rate: 0.030000
+Train 14, loss: 0.550243, train acc: 0.821185, train ins_iou: 0.683066
+Test 14, loss: 2.660269, test acc: 0.645006  test ins_iou: 0.618724
+Learning rate: 0.030000
+Train 15, loss: 0.544299, train acc: 0.824508, train ins_iou: 0.687425
+Test 15, loss: 2.335066, test acc: 0.646845  test ins_iou: 0.639143
+Max instance iou:0.63914
+ceiling iou: 0.6417413
+floor iou: 0.6437603
+wall iou: 0.58291465
+beam iou: 0.0
+column iou: 0.46028256
+window iou: 0.45943305
+door iou: 0.5266793
+table iou: 0.5793156
+chair iou: 0.61290693
+sofa iou: 0.51626575
+bookcase iou: 0.46757552
+board iou: 0.49662355
+clutter iou: 0.5744933
+Max class iou:0.50477
+Learning rate: 0.030000
+Train 16, loss: 0.513939, train acc: 0.834262, train ins_iou: 0.700116
+Test 16, loss: 2.813426, test acc: 0.641683  test ins_iou: 0.632755
+Learning rate: 0.030000
+Train 17, loss: 0.493165, train acc: 0.839934, train ins_iou: 0.704958
+Test 17, loss: 3.921988, test acc: 0.653046  test ins_iou: 0.642659
+Max instance iou:0.64266
+ceiling iou: 0.6456591
+floor iou: 0.64759433
+wall iou: 0.576774
+beam iou: 0.0
+column iou: 0.47742933
+window iou: 0.48247826
+door iou: 0.5134591
+table iou: 0.58354765
+chair iou: 0.62952566
+sofa iou: 0.5075747
+bookcase iou: 0.47011194
+board iou: 0.5082046
+clutter iou: 0.5694611
+Max class iou:0.50860
+Learning rate: 0.030000
+Train 18, loss: 0.492991, train acc: 0.841089, train ins_iou: 0.707051
+Test 18, loss: 2.626639, test acc: 0.666260  test ins_iou: 0.648226
+Max Acc:0.66626
+Max instance iou:0.64823
+ceiling iou: 0.65152955
+floor iou: 0.6521589
+wall iou: 0.5887013
+beam iou: 0.0
+column iou: 0.4810512
+window iou: 0.46995172
+door iou: 0.520151
+table iou: 0.59874296
+chair iou: 0.6329325
+sofa iou: 0.52724725
+bookcase iou: 0.48943016
+board iou: 0.5119475
+clutter iou: 0.58116466
+Max class iou:0.51577
+Learning rate: 0.030000
+Train 19, loss: 0.467688, train acc: 0.847668, train ins_iou: 0.713934
+Test 19, loss: 2.418888, test acc: 0.665555  test ins_iou: 0.639344
+Learning rate: 0.030000
+Train 20, loss: 0.475267, train acc: 0.848071, train ins_iou: 0.716655
+Test 20, loss: 2.801159, test acc: 0.664339  test ins_iou: 0.640959
+Learning rate: 0.030000
+Train 21, loss: 0.443396, train acc: 0.856119, train ins_iou: 0.725359
+Test 21, loss: 2.680457, test acc: 0.655364  test ins_iou: 0.643099
+Learning rate: 0.030000
+Train 22, loss: 0.439727, train acc: 0.858546, train ins_iou: 0.729284
+Test 22, loss: 2.641598, test acc: 0.647836  test ins_iou: 0.636477
+Learning rate: 0.030000
+Train 23, loss: 0.466407, train acc: 0.852658, train ins_iou: 0.721981
+Test 23, loss: 2.999828, test acc: 0.631129  test ins_iou: 0.621759
+Learning rate: 0.030000
+Train 24, loss: 0.423046, train acc: 0.863960, train ins_iou: 0.736881
+Test 24, loss: 2.760840, test acc: 0.657992  test ins_iou: 0.639212
+Learning rate: 0.030000
+Train 25, loss: 0.427109, train acc: 0.863398, train ins_iou: 0.732885
+Test 25, loss: 2.912913, test acc: 0.661673  test ins_iou: 0.640131
+Learning rate: 0.030000
+Train 26, loss: 0.412333, train acc: 0.867714, train ins_iou: 0.740984
+Test 26, loss: 2.718221, test acc: 0.661668  test ins_iou: 0.645662
+Learning rate: 0.030000
+Train 27, loss: 0.403419, train acc: 0.870531, train ins_iou: 0.744429
+Test 27, loss: 3.104100, test acc: 0.643999  test ins_iou: 0.636139
+Learning rate: 0.030000
+Train 28, loss: 0.398241, train acc: 0.872850, train ins_iou: 0.748140
+Test 28, loss: 3.030656, test acc: 0.647704  test ins_iou: 0.629412
+Learning rate: 0.030000
+Train 29, loss: 0.441939, train acc: 0.858389, train ins_iou: 0.727625
+Test 29, loss: 2.906824, test acc: 0.646751  test ins_iou: 0.631464
+Learning rate: 0.030000
+Train 30, loss: 0.395341, train acc: 0.874767, train ins_iou: 0.749043
+Test 30, loss: 3.248876, test acc: 0.625988  test ins_iou: 0.630563
+Final Max Acc:0.66626
+Final Max instance iou:0.64823
+Final Max class iou:0.51577
+Namespace(batch_size=16, epochs=70, eval=False, exp_name='pointMLP_demo1', lr=0.03, manual_seed=None, model='pointMLP', model_type='insiou', momentum=0.9, no_cuda=False, num_points=2048, resume=True, scheduler='step', step=40, test_batch_size=16, use_sgd=False, workers=12)
+Using GPU
+Learning rate: 0.030000
+Train 1, loss: 0.485225, train acc: 0.844622, train ins_iou: 0.711318
+Test 1, loss: 2.547189, test acc: 0.654095  test ins_iou: 0.641268
+Max Acc:0.65410
+Max instance iou:0.64127
+ceiling iou: 0.6437305
+floor iou: 0.6458848
+wall iou: 0.58493966
+beam iou: 0.0
+column iou: 0.46825784
+window iou: 0.47974268
+door iou: 0.5289771
+table iou: 0.5899446
+chair iou: 0.6351822
+sofa iou: 0.52547204
+bookcase iou: 0.4811832
+board iou: 0.4967739
+clutter iou: 0.5772476
+Max class iou:0.51210
+Learning rate: 0.030000
+Train 2, loss: 0.590189, train acc: 0.829203, train ins_iou: 0.692662
+Test 2, loss: 95.840673, test acc: 0.650156  test ins_iou: 0.626833
+Learning rate: 0.030000
+Train 3, loss: 0.520315, train acc: 0.830445, train ins_iou: 0.692240
+Test 3, loss: 2.533394, test acc: 0.656551  test ins_iou: 0.633871
+Max Acc:0.65655
+Learning rate: 0.030000
+Train 4, loss: 0.468752, train acc: 0.848110, train ins_iou: 0.714824
+Test 4, loss: 2.581108, test acc: 0.651300  test ins_iou: 0.641173
+Learning rate: 0.030000
+Train 5, loss: 0.451894, train acc: 0.853524, train ins_iou: 0.721205
+Test 5, loss: 2.621054, test acc: 0.640571  test ins_iou: 0.637064
+Learning rate: 0.030000
+Train 6, loss: 0.454904, train acc: 0.852954, train ins_iou: 0.722767
+Test 6, loss: 2.614187, test acc: 0.652900  test ins_iou: 0.639694
+ceiling iou: 0.642416
+floor iou: 0.64453644
+wall iou: 0.5925004
+beam iou: 0.0
+column iou: 0.47244462
+window iou: 0.43226862
+door iou: 0.5324243
+table iou: 0.5934907
+chair iou: 0.63804436
+sofa iou: 0.53095734
+bookcase iou: 0.48478892
+board iou: 0.51994
+clutter iou: 0.58405
+Max class iou:0.51291
+Learning rate: 0.030000
+Train 7, loss: 0.444432, train acc: 0.856771, train ins_iou: 0.726824
+Test 7, loss: 2.863269, test acc: 0.627694  test ins_iou: 0.627305
+Learning rate: 0.030000
+Train 8, loss: 0.417584, train acc: 0.865005, train ins_iou: 0.737523
+Test 8, loss: 2.856318, test acc: 0.642238  test ins_iou: 0.638620
+Learning rate: 0.030000
+Train 9, loss: 0.409376, train acc: 0.868324, train ins_iou: 0.741347
+Test 9, loss: 2.705519, test acc: 0.640481  test ins_iou: 0.633538
+Learning rate: 0.030000
+Train 10, loss: 0.391402, train acc: 0.873481, train ins_iou: 0.748920
+Test 10, loss: 3.078783, test acc: 0.609697  test ins_iou: 0.621127
+Learning rate: 0.030000
+Train 11, loss: 0.402615, train acc: 0.870267, train ins_iou: 0.742579
+Test 11, loss: 2.829377, test acc: 0.623010  test ins_iou: 0.626499
+Learning rate: 0.030000
+Train 12, loss: 0.381938, train acc: 0.877034, train ins_iou: 0.750736
+Test 12, loss: 2.873036, test acc: 0.632166  test ins_iou: 0.634505
+Learning rate: 0.030000
+Train 13, loss: 0.370110, train acc: 0.880984, train ins_iou: 0.758329
+Test 13, loss: 3.253718, test acc: 0.619880  test ins_iou: 0.617823
+Learning rate: 0.030000
+Train 14, loss: 0.368366, train acc: 0.881925, train ins_iou: 0.760667
+Test 14, loss: 3.250550, test acc: 0.639046  test ins_iou: 0.631211
+Learning rate: 0.030000
+Train 15, loss: 0.354730, train acc: 0.886165, train ins_iou: 0.767314
+Test 15, loss: 3.189021, test acc: 0.631863  test ins_iou: 0.631654
+Learning rate: 0.030000
+Train 16, loss: 0.342772, train acc: 0.890085, train ins_iou: 0.771856
+Test 16, loss: 3.266478, test acc: 0.618053  test ins_iou: 0.625241
+Learning rate: 0.030000
+Train 17, loss: 0.371693, train acc: 0.884433, train ins_iou: 0.761546
+Test 17, loss: 3.264382, test acc: 0.613298  test ins_iou: 0.617570
+Learning rate: 0.030000
+Train 18, loss: 0.375909, train acc: 0.881791, train ins_iou: 0.759709
+Test 18, loss: 3.184444, test acc: 0.599779  test ins_iou: 0.600912
+Learning rate: 0.030000
+Train 19, loss: 0.346612, train acc: 0.889364, train ins_iou: 0.768568
+Test 19, loss: 2.926221, test acc: 0.637250  test ins_iou: 0.634753
+Learning rate: 0.030000
+Train 20, loss: 0.320564, train acc: 0.898383, train ins_iou: 0.780760
+Test 20, loss: 2.749908, test acc: 0.648749  test ins_iou: 0.635504
+Learning rate: 0.030000
+Train 21, loss: 0.327261, train acc: 0.896781, train ins_iou: 0.780769
+Test 21, loss: 2.877673, test acc: 0.633379  test ins_iou: 0.636901
+Learning rate: 0.030000
+Train 22, loss: 0.302544, train acc: 0.903295, train ins_iou: 0.789182
+Test 22, loss: 3.286963, test acc: 0.636010  test ins_iou: 0.633031
+Learning rate: 0.030000
+Train 23, loss: 0.301047, train acc: 0.904865, train ins_iou: 0.792672
+Test 23, loss: 3.216373, test acc: 0.626342  test ins_iou: 0.634486
+ceiling iou: 0.6374398
+floor iou: 0.63895833
+wall iou: 0.5761225
+beam iou: 0.0
+column iou: 0.5177081
+window iou: 0.465991
+door iou: 0.49468663
+table iou: 0.5954013
+chair iou: 0.65653753
+sofa iou: 0.52231133
+bookcase iou: 0.49189633
+board iou: 0.5004573
+clutter iou: 0.58262724
+Max class iou:0.51386
+Learning rate: 0.030000
+Train 24, loss: 0.296205, train acc: 0.905873, train ins_iou: 0.795218
+Test 24, loss: 3.482083, test acc: 0.595855  test ins_iou: 0.616253
+Learning rate: 0.030000
+Train 25, loss: 0.276818, train acc: 0.911176, train ins_iou: 0.802974
+Test 25, loss: 2.960438, test acc: 0.634702  test ins_iou: 0.634026
+Learning rate: 0.030000
+Train 26, loss: 0.272651, train acc: 0.913014, train ins_iou: 0.805394
+Test 26, loss: 3.487433, test acc: 0.612703  test ins_iou: 0.613906
+Learning rate: 0.030000
+Train 27, loss: 0.307879, train acc: 0.903138, train ins_iou: 0.789389
+Test 27, loss: 2.971373, test acc: 0.639417  test ins_iou: 0.634289
+Learning rate: 0.030000
+Train 28, loss: 0.288356, train acc: 0.909482, train ins_iou: 0.800220
+Test 28, loss: 3.268302, test acc: 0.623654  test ins_iou: 0.624736
+Learning rate: 0.030000
+Train 29, loss: 0.264253, train acc: 0.916451, train ins_iou: 0.810572
+Test 29, loss: 3.213122, test acc: 0.627185  test ins_iou: 0.624094
+Learning rate: 0.030000
+Train 30, loss: 0.247719, train acc: 0.920743, train ins_iou: 0.816503
+Test 30, loss: 3.157557, test acc: 0.632518  test ins_iou: 0.634004
+ceiling iou: 0.6366503
+floor iou: 0.63734615
+wall iou: 0.58377886
+beam iou: 0.0
+column iou: 0.5075907
+window iou: 0.44486997
+door iou: 0.5050858
+table iou: 0.5968058
+chair iou: 0.64946866
+sofa iou: 0.5424535
+bookcase iou: 0.4901881
+board iou: 0.49642706
+clutter iou: 0.5920892
+Max class iou:0.51406
+Learning rate: 0.030000
+Train 31, loss: 0.250175, train acc: 0.921375, train ins_iou: 0.819307
+Test 31, loss: 3.478039, test acc: 0.632682  test ins_iou: 0.623504
+Learning rate: 0.030000
+Train 32, loss: 0.500521, train acc: 0.861810, train ins_iou: 0.733722
+Test 32, loss: 2.987818, test acc: 0.650664  test ins_iou: 0.628649
+Learning rate: 0.030000
+Train 33, loss: 0.358261, train acc: 0.888487, train ins_iou: 0.767090
+Test 33, loss: 5.257695, test acc: 0.644154  test ins_iou: 0.630009
+Learning rate: 0.030000
+Train 34, loss: 0.350659, train acc: 0.892772, train ins_iou: 0.774069
+Test 34, loss: 4.381550, test acc: 0.639217  test ins_iou: 0.633280
+Learning rate: 0.030000
+Train 35, loss: 0.310977, train acc: 0.903411, train ins_iou: 0.790709
+Test 35, loss: 2.823779, test acc: 0.652931  test ins_iou: 0.630767
+Learning rate: 0.030000
+Train 36, loss: 0.252237, train acc: 0.919788, train ins_iou: 0.813966
+Test 36, loss: 3.218139, test acc: 0.636199  test ins_iou: 0.629794
+Learning rate: 0.030000
+Train 37, loss: 0.255646, train acc: 0.919293, train ins_iou: 0.814605
+Test 37, loss: 3.073360, test acc: 0.639733  test ins_iou: 0.628020
+Learning rate: 0.030000
+Train 38, loss: 0.236291, train acc: 0.925655, train ins_iou: 0.824954
+Test 38, loss: 2.843851, test acc: 0.646671  test ins_iou: 0.631038
+Learning rate: 0.030000
+Train 39, loss: 0.229932, train acc: 0.927159, train ins_iou: 0.828662
+Test 39, loss: 3.358350, test acc: 0.630042  test ins_iou: 0.629670
+Learning rate: 0.015000
+Train 40, loss: 0.232137, train acc: 0.927507, train ins_iou: 0.829260
