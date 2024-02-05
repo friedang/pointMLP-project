@@ -356,7 +356,7 @@ class MultiHeadAttention(nn.Module):
         ])
         if no_pooling:
             self.fc_concat = nn.Sequential(
-                nn.Linear(anchors * num_heads, 64),
+                nn.Linear(anchors * num_heads, 2048),
                 )
         else:
             self.fc_concat = nn.Linear(anchors * num_heads, anchors * num_heads)
@@ -493,7 +493,7 @@ class PointMLP(nn.Module):
 
         #here is the cls_token
         color_context = self.col_map(color)
-        x = torch.cat([x, global_context.repeat([1, 1, x.shape[-1]]), color_context], dim=1)
+        x = torch.cat([x, global_context, color_context], dim=1)
         # x = torch.cat([x, global_context.repeat([1, 1, x.shape[-1]])], dim=1)
         x = self.classifier(x)
         x = F.log_softmax(x, dim=1)
