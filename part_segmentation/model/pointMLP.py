@@ -436,7 +436,7 @@ class PointMLP(nn.Module):
         self.col_map = nn.Sequential(
             ConvBNReLU1D(3, cls_dim, bias=bias, activation=activation),
             ConvBNReLU1D(cls_dim, cls_dim, bias=bias, activation=activation),
-            MultiHeadAttention(gmp_dim, gmp_dim, anchors=2048, no_pooling)
+            MultiHeadAttention(gmp_dim, gmp_dim, anchors=2048, no_pooling=True)
         )
         # global max pooling mapping
         self.gmp_map_list = nn.ModuleList()
@@ -445,7 +445,7 @@ class PointMLP(nn.Module):
         for en_dim in en_dims:
             self.gmp_map_list.append(nn.Sequential(
                 ConvBNReLU1D(en_dim, gmp_dim, bias=bias, activation=activation),
-                MultiHeadAttention(gmp_dim, gmp_dim, anchors=feat_sizes[i], no_pooling=False)))
+                MultiHeadAttention(gmp_dim, gmp_dim, anchors=feat_sizes[i], no_pooling=True)))
             i += 1
         self.gmp_map_end = ConvBNReLU1D(gmp_dim * len(en_dims), gmp_dim, bias=bias,
                                         activation=activation)
