@@ -345,7 +345,7 @@ class SelfAttention(nn.Module):
 
 
 class MultiHeadAttention(nn.Module):
-    def __init__(self, input_dim, output_dim, anchors, num_heads=8, no_pooling=False):
+    def __init__(self, input_dim, output_dim, anchors, num_heads=1, no_pooling=False):
         super(MultiHeadAttention, self).__init__()
         # self.head_dim = output_dim // num_heads
         self.num_heads = num_heads
@@ -379,7 +379,7 @@ class PointMLP(nn.Module):
                  dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
                  k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
                  de_dims=[512, 256, 128, 128], de_blocks=[2,2,2,2],
-                 gmp_dim=64,cls_dim=64, **kwargs):
+                 gmp_dim=64,col_dim=64, **kwargs):
         super(PointMLP, self).__init__()
         self.stages = len(pre_blocks)
         self.class_num = num_classes
@@ -434,9 +434,9 @@ class PointMLP(nn.Module):
 
         # color mapping
         self.col_map = nn.Sequential(
-            ConvBNReLU1D(3, cls_dim, bias=bias, activation=activation),
-            ConvBNReLU1D(cls_dim, cls_dim, bias=bias, activation=activation),
-            MultiHeadAttention(gmp_dim, gmp_dim, anchors=2048, no_pooling=True)
+            ConvBNReLU1D(3, col_dim, bias=bias, activation=activation),
+            ConvBNReLU1D(col_dim, col_dim, bias=bias, activation=activation),
+            # MultiHeadAttention(col_dim, col_dim, anchors=2048, no_pooling=True)
         )
         # global max pooling mapping
         self.gmp_map_list = nn.ModuleList()
@@ -452,8 +452,8 @@ class PointMLP(nn.Module):
 
         # classifier
         self.classifier = nn.Sequential(
-            #nn.Conv1d(gmp_dim+cls_dim+de_dims[-1], 128, 1, bias=bias),
-            nn.Conv1d(gmp_dim+cls_dim+de_dims[-1], 128, 1, bias=bias),
+            #nn.Conv1d(gmp_dim+col_dim+de_dims[-1], 128, 1, bias=bias),
+            nn.Conv1d(gmp_dim+col_dim+de_dims[-1], 128, 1, bias=bias),
             nn.BatchNorm1d(128),
             nn.Dropout(),
             nn.Conv1d(128, num_classes, 1, bias=bias)
@@ -509,7 +509,7 @@ def pointMLP(num_classes=50, **kwargs) -> PointMLP:
                  dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
                  k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
                  de_dims=[512, 256, 128, 128], de_blocks=[4,4,4,4],
-                 gmp_dim=64,cls_dim=64, **kwargs)
+                 gmp_dim=64,col_dim=64, **kwargs)
 
 
 if __name__ == '__main__':
