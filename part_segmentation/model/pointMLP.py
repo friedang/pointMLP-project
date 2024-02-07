@@ -2,6 +2,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import math
 from torch import einsum
 from einops import rearrange, repeat
 from pointnet2_ops import pointnet2_utils
@@ -88,6 +89,210 @@ def farthest_point_sample(xyz, npoint):
         farthest = torch.max(distance, -1)[1]
     return centroids
 
+def lloyds_algorithm(xyz, num_iterations=2):
+    """
+    Lloyd's Algorithm for point set relaxation.
+    
+    Input:
+        xyz: Initial point cloud, [B, N, 3]
+        num_iterations: Number of iterations for refinement
+        
+    Return:
+        refined_xyz: Refined point cloud, [B, N, 3]
+    """
+    device = xyz.device
+    B, N, C = xyz.shape
+    refined_xyz = xyz.clone()
+
+    for _ in range(num_iterations):
+        dist_squared = torch.sum((refined_xyz.unsqueeze(2) - xyz.unsqueeze(1))**2, dim=-1)
+        _, assignments = torch.min(dist_squared, dim=2)
+
+        for i in range(B):
+            for j in range(N):
+                mask = (assignments[i] == j).unsqueeze(-1)
+                if torch.sum(mask) > 0:
+                    refined_xyz[i, j] = torch.mean(xyz[i, mask.expand_as(xyz[i])])
+
+    return refined_xyz
+
+def poisson_disk_sample(xyz, npoint, radius=0.1, k=30):
+    """
+    Input:
+        xyz: point cloud data, [B, N, 3]
+        npoint: number of samples
+        radius: minimum distance between samples
+        k: number of attempts to generate a new sample
+    Return:
+        centroids: sampled point cloud index, [B, npoint]
+    """
+    device = xyz.device
+    B, N, C = xyz.shape
+    centroids = torch.zeros(B, npoint, dtype=torch.long).to(device)
+    active = torch.ones(B, N, dtype=torch.bool).to(device)
+    radius_squared = radius**2
+
+    farthest = torch.randint(0, N, (B,), dtype=torch.long).to(device)
+    batch_indices = torch.arange(B, dtype=torch.long).to(device)
+    centroids[:, 0] = farthest
+
+    for i in range(1, npoint):
+        current_centroid = xyz[batch_indices, farthest, :].view(B, 1, 3)
+
+        candidate_indices = torch.randint(0, N, (B, k), dtype=torch.long).to(device)
+        candidate_points = xyz[batch_indices.unsqueeze(1), candidate_indices, :]
+
+        candidate_mask = torch.all((current_centroid - candidate_points)**2 > radius_squared, dim=-1)
+        candidate_indices = candidate_indices[candidate_mask]
+
+        if candidate_indices.numel() == 0:
+            break
+
+        dist_squared = torch.min(torch.sum((xyz[batch_indices.unsqueeze(1), candidate_indices, :] - current_centroid)**2, dim=-1), dim=1)[0]
+        farthest = torch.argmax(dist_squared)
+
+        centroids[:, i] = candidate_indices[farthest]
+        active[batch_indices, centroids[:, i]] = False
+
+    return centroids
+
+def combined_poisson_disk_sample(xyz, npoint, radius=0.1, k=30):
+    """
+    Input:
+        xyz: point cloud data, [B, N, 3]
+        npoint: number of samples
+        radius: minimum distance between samples
+        k: number of attempts to generate a new sample
+    Return:
+        centroids: sampled point cloud index, [B, npoint]
+    """
+    device = xyz.device
+    B, N, C = xyz.shape
+    centroids = torch.zeros(B, npoint, dtype=torch.long).to(device)
+    active = torch.ones(B, N, dtype=torch.bool).to(device)
+    radius_squared = radius**2
+
+    farthest = torch.randint(0, N, (B,), dtype=torch.long).to(device)
+    batch_indices = torch.arange(B, dtype=torch.long).to(device)
+    centroids[:, 0] = farthest
+    active[batch_indices, centroids[:, 0]] = False
+
+    for i in range(1, npoint):
+        current_centroid = xyz[batch_indices, farthest, :].view(B, 1, 3)
+
+        candidate_indices = torch.randint(0, N, (B, k), dtype=torch.long).to(device)
+        candidate_points = xyz[batch_indices.unsqueeze(1), candidate_indices, :]
+
+        candidate_mask = torch.all((current_centroid - candidate_points)**2 > radius_squared, dim=-1)
+        candidate_indices = candidate_indices[candidate_mask]
+
+        if candidate_indices.numel() == 0:
+            break
+
+        dist_squared = torch.min(torch.sum((xyz[batch_indices.unsqueeze(1), candidate_indices, :] - current_centroid)**2, dim=-1), dim=1)[0]
+        farthest = torch.argmax(dist_squared)
+
+        centroids[:, i] = candidate_indices[farthest]
+        active[batch_indices, centroids[:, i]] = False
+
+    return centroids
+
+def random_sampling(xyz, npoint):
+    """
+    Input:
+        xyz: pointcloud data, [B, N, 3]
+        npoint: number of samples
+    Return:
+        centroids: sampled pointcloud index, [B, npoint]
+    """
+    device = xyz.device
+    B, N, C = xyz.shape
+    centroids = torch.randint(0, N, (B, npoint), dtype=torch.long).to(device)
+    
+    return centroids
+
+def blue_noise_sampling(xyz, npoint):
+    """
+    Input:
+        xyz: pointcloud data, [B, N, 3]
+        npoint: number of samples
+    Return:
+        centroids: sampled pointcloud index, [B, npoint]
+    """
+    device = xyz.device
+    B, N, C = xyz.shape
+    centroids = torch.randint(0, N, (B, 1), dtype=torch.long).to(device)
+
+    while centroids.size(1) < npoint:
+        distances = torch.sum((xyz - xyz[:, centroids, :]) ** 2, dim=-1)
+        min_distances, _ = torch.min(distances, dim=1)
+        max_min_distance, farthest = torch.max(min_distances, dim=1)
+        centroids = torch.cat([centroids, farthest.unsqueeze(1)], dim=1)
+
+    return centroids[:, :npoint]
+
+def blue_noise_farthest_point_sampling(xyz, npoint, refinement_iters=5):
+    """
+    Input:
+        xyz: pointcloud data, [B, N, 3]
+        npoint: number of samples
+        refinement_iters: number of iterations for blue-noise refinement
+    Return:
+        centroids: sampled pointcloud index, [B, npoint]
+    """
+    device = xyz.device
+    B, N, C = xyz.shape
+    centroids = farthest_point_sample(xyz, npoint)
+
+    for _ in range(refinement_iters):
+        centroid_points = xyz[:, centroids, :]  
+
+        distances = torch.sum((xyz.unsqueeze(2) - centroid_points.unsqueeze(1)) ** 2, dim=-1)
+        min_distances, _ = torch.min(distances, dim=2)
+        _, farthest = torch.max(min_distances, dim=1)
+        centroids = torch.cat([centroids, farthest.unsqueeze(1)], dim=1)
+
+    return centroids[:, :npoint]
+
+def poisson_disc_sampling(xyz, radius, num_points):
+    """
+    Poisson Disk Sampling for pointclouds using farthest point sampling.
+
+    Input:
+        xyz: pointcloud data, [B, N, 3]
+        radius: minimum distance between points
+        num_points: number of points to be sampled
+    Return:
+        sampled_points: sampled pointcloud, [B, num_points, 3]
+    """
+    device = xyz.device
+    B, N, C = xyz.shape
+    sampled_points = torch.zeros(B, num_points, C).to(device)
+
+    farthest_indices = farthest_point_sample(xyz, 1)
+
+    sampled_points[:, 0, :] = xyz[torch.arange(B), farthest_indices.squeeze(), :]
+
+    active_list = farthest_indices.clone()
+    distance_matrix = torch.ones(B, N).to(device) * math.inf
+
+    for i in range(num_points - 1):
+        current_point = sampled_points[:, i, :].unsqueeze(1)
+        dist_to_current = torch.sum((xyz - current_point) ** 2, dim=-1)
+
+        distance_matrix[torch.arange(B), active_list.squeeze()] = dist_to_current.min(dim=-1)[0]
+        active_list = torch.nonzero(distance_matrix.min(dim=-1)[0] >= radius, as_tuple=True)[0]
+
+        if active_list.numel() == 0:
+            break  # No more valid points
+
+        random_index = torch.randint(0, active_list.numel(), (1,), device=device).item()
+        chosen_index = active_list[random_index].item()
+
+        sampled_points[:, i + 1, :] = xyz[torch.arange(B), chosen_index, :]
+
+    return sampled_points
+
 
 def query_ball_point(radius, nsample, xyz, new_xyz):
     """
@@ -157,7 +362,17 @@ class LocalGrouper(nn.Module):
 
         # fps_idx = torch.multinomial(torch.linspace(0, N - 1, steps=N).repeat(B, 1).to(xyz.device), num_samples=self.groups, replacement=False).long()
         # fps_idx = farthest_point_sample(xyz, self.groups).long()
-        fps_idx = pointnet2_utils.furthest_point_sample(xyz, self.groups).long()  # [B, npoint]
+        # fps_idx = random_sampling(xyz, self.groups).long()
+        # fps_idx = blue_noise_farthest_point_sampling(xyz, self.groups).long()
+        # fps_idx = blue_noise_sampling(xyz, self.groups).long()
+        # fps_idx = pointnet2_utils.furthest_point_sample(xyz, self.groups).long()  # [B, npoint]
+        # fps_idx = poisson_disc_sampling(xyz, 0.1, self.groups).long()
+        fps_idx = poisson_disk_sample(xyz, self.groups).long()
+        # fps_idx = combined_poisson_disk_sample(xyz, self.groups).long()  # Updated line
+ 
+        #refined_xyz = lloyds_algorithm(xyz, num_iterations=10)
+        #fps_idx = farthest_point_sample(refined_xyz, self.groups).long()
+        
         new_xyz = index_points(xyz, fps_idx)  # [B, npoint, 3]
         new_points = index_points(points, fps_idx)  # [B, npoint, d]
 
@@ -467,3 +682,4 @@ if __name__ == '__main__':
     model = pointMLP(13)
     out = model(data, norm)  # [2,2048,50]
     print(out.shape)
+
