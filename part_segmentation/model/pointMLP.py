@@ -443,6 +443,11 @@ class PointMLP(nn.Module):
         feat_sizes = [8, 32, 128, 512, 2048]
         i = 0
         for en_dim in en_dims:
+            if feat_sizes[i] == 2048:
+                self.gmp_map_list.append(
+                    ConvBNReLU1D(en_dim, gmp_dim, bias=bias, activation=activation)
+                )
+                break
             self.gmp_map_list.append(nn.Sequential(
                 ConvBNReLU1D(en_dim, gmp_dim, bias=bias, activation=activation),
                 nn.Linear(feat_sizes[i], 2048)
