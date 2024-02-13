@@ -455,7 +455,7 @@ class PointMLP(nn.Module):
                 #              activation=activation)
                 ))
             i += 1
-        self.gmp_map_end = MultiHeadAttention(320, 64, anchors=0)
+        self.gmp_map_end = MultiHeadAttention(320, 64, anchors=2048)
 
         # classifier
         self.classifier = nn.Sequential(
