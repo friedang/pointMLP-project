@@ -345,7 +345,7 @@ class SelfAttention(nn.Module):
 
 
 class MultiHeadAttention(nn.Module):
-    def __init__(self, input_dim, output_dim, anchors, num_heads=1, no_pooling=False):
+    def __init__(self, input_dim, output_dim, anchors, num_heads=8, no_pooling=False):
         super(MultiHeadAttention, self).__init__()
         # self.head_dim = output_dim // num_heads
         self.num_heads = num_heads
@@ -435,7 +435,7 @@ class PointMLP(nn.Module):
         # color mapping
         self.col_map = nn.Sequential(
             ConvBNReLU1D(3, col_dim, bias=bias, activation=activation),
-            # ConvBNReLU1D(col_dim, col_dim, bias=bias, activation=activation),
+            ConvBNReLU1D(col_dim, col_dim, bias=bias, activation=activation),
             # MultiHeadAttention(col_dim, col_dim, anchors=2048, no_pooling=True)
         )
         # global max pooling mapping
