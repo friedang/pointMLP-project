@@ -345,7 +345,7 @@ class SelfAttention(nn.Module):
 
 
 class MultiHeadAttention(nn.Module):
-    def __init__(self, input_dim, output_dim, anchors, num_heads=8, no_pooling=False):
+    def __init__(self, input_dim, output_dim, anchors, num_heads=8, no_pooling=True):
         super(MultiHeadAttention, self).__init__()
         # self.head_dim = output_dim // num_heads
         self.num_heads = num_heads
@@ -354,13 +354,13 @@ class MultiHeadAttention(nn.Module):
         self.attention_heads = nn.ModuleList([
             SelfAttention(input_dim, output_dim, 1, 1) for _ in range(num_heads)
         ])
-        # if no_pooling:
-        #     self.fc_concat = nn.Sequential(
-        #         nn.Linear(anchors * num_heads, 2048))
-        # else:
-        #     self.fc_concat = nn.Sequential(
-        #         nn.Linear(anchors * num_heads, anchors * num_heads // 2),
-        #         nn.Linear(anchors * num_heads, 1),)
+        if no_pooling:
+            self.fc_concat = nn.Sequential(
+                nn.Linear(anchors * num_heads, 2048))
+        else:
+            self.fc_concat = nn.Sequential(
+                nn.Linear(anchors * num_heads, anchors * num_heads // 2),
+                nn.Linear(anchors * num_heads, 1),)
 
     def forward(self, input_tensor):
         # Compute attention for each head
@@ -370,7 +370,7 @@ class MultiHeadAttention(nn.Module):
         # Concatenate attention outputs along the head dimension
         concatenated_attention = torch.cat(attention_outputs, dim=-1)  # [batch_size, seq_len, head_dim * num_heads]
 
-        return concatenated_attention # self.fc_concat(concatenated_attention)  # [batch_size, seq_len, output_dim]
+        return self.fc_concat(concatenated_attention)  # [batch_size, seq_len, output_dim]
 
 
 class PointMLP(nn.Module):
