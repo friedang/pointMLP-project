@@ -443,9 +443,14 @@ class PointMLP(nn.Module):
         feat_sizes = [8, 32, 128, 512, 2048]
         i = 0
         for en_dim in en_dims:
-            self.gmp_map_list.append(nn.Sequential(
-                ConvBNReLU1D(en_dim, gmp_dim, bias=bias, activation=activation),
-                MultiHeadAttention(gmp_dim, gmp_dim, anchors=feat_sizes[i], no_pooling=True)))
+            if feat_sizes[i] in [512, 2048]:
+                self.gmp_map_list.append(nn.Sequential(
+                    ConvBNReLU1D(en_dim, gmp_dim, bias=bias, activation=activation),
+                    MultiHeadAttention(gmp_dim, gmp_dim, anchors=feat_sizes[i], no_pooling=True)))
+            else:
+                self.gmp_map_list.append(nn.Sequential(
+                    ConvBNReLU1D(en_dim, gmp_dim, bias=bias, activation=activation),
+                    SelfAttention(gmp_dim, gmp_dim))
             i += 1
         self.gmp_map_end = ConvBNReLU1D(gmp_dim * len(en_dims), gmp_dim, bias=bias,
                                         activation=activation)
@@ -491,6 +496,8 @@ class PointMLP(nn.Module):
             gmp_list.append(self.gmp_map_list[i](x_list[i]))
             # Use the following with max pooling instead if no_pooling=False in Multihead-Attention
             # gmp_list.append(F.adaptive_max_pool1d(self.gmp_map_list[i](x_list[i]), 1))
+        gmp_list = [gmp.repeat([1, 1, x.shape[-1]) if gmp.shape != x.shape else gmp
+                   for gmp in gmp_list]
         global_context = self.gmp_map_end(torch.cat(gmp_list, dim=1)) # [b, gmp_dim, 1]
 
         #here is the cls_token
