@@ -491,7 +491,7 @@ if __name__ == "__main__":
     parser.add_argument('--num_points', type=int, default=2048,
                         help='num of points to use')
     parser.add_argument('--workers', type=int, default=12)
-    parser.add_argument('--resume', type=bool, default=False,
+    parser.add_argument('--resume', type=bool, default=True,
                         help='Resume training or not')
     parser.add_argument('--model_type', type=str, default='insiou',
                         help='choose to test the best insiou/clsiou/acc model (options: insiou, clsiou, acc)')

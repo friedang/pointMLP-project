@@ -128,3 +128,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 .DS_Store
+
+part_segmentation/checkpoints_poisson/
+part_segmentation/checkpoints/
