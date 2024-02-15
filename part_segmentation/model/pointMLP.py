@@ -66,6 +66,21 @@ def index_points(points, idx):
     return new_points
 
 
+def random_sampling(xyz, npoint):
+    """
+    Input:
+        xyz: pointcloud data, [B, N, 3]
+        npoint: number of samples
+    Return:
+        centroids: sampled pointcloud index, [B, npoint]
+    """
+    device = xyz.device
+    B, N, C = xyz.shape
+    centroids = torch.randint(0, N, (B, npoint), dtype=torch.long).to(device)
+    
+    return centroids
+
+
 def farthest_point_sample(xyz, npoint):
     """
     Input:
@@ -157,7 +172,8 @@ class LocalGrouper(nn.Module):
 
         # fps_idx = torch.multinomial(torch.linspace(0, N - 1, steps=N).repeat(B, 1).to(xyz.device), num_samples=self.groups, replacement=False).long()
         # fps_idx = farthest_point_sample(xyz, self.groups).long()
-        fps_idx = pointnet2_utils.furthest_point_sample(xyz, self.groups).long()  # [B, npoint]
+        # fps_idx = pointnet2_utils.furthest_point_sample(xyz, self.groups).long()  # [B, npoint]
+        fps_idx = random_sampling(xyz, self.groups).long()
         new_xyz = index_points(xyz, fps_idx)  # [B, npoint, 3]
         new_points = index_points(points, fps_idx)  # [B, npoint, d]
 
