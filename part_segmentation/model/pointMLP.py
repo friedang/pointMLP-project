@@ -512,7 +512,7 @@ class PointMLP(nn.Module):
             gmp_list.append(self.gmp_map_list[i](x_list[i]))
             # Use the following with max pooling instead if no_pooling=False in Multihead-Attention
             # gmp_list.append(F.adaptive_max_pool1d(self.gmp_map_list[i](x_list[i]), 1))
-        gmp_list = [gmp.repeat([1, 1, x.shape[-1]) if gmp.shape != x.shape else gmp
+        gmp_list = [gmp.repeat([1, 1, x.shape[-1] // gmp.shape[-1]]) if gmp.shape[-1] != x.shape[-1] else gmp
                    for gmp in gmp_list]
         global_context = self.gmp_map_end(torch.cat(gmp_list, dim=1)) # [b, gmp_dim, 1]
 
