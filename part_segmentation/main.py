@@ -61,6 +61,7 @@ def train(args, io):
 
     model.apply(weight_init)
     model = nn.DataParallel(model)
+    print(f"Model size: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
     print("Let's use", torch.cuda.device_count(), "GPUs!")
 
     '''Resume or not'''
@@ -387,6 +388,7 @@ def test(args, io):
 
     model = models.__dict__[args.model](num_part).to(device)
     io.cprint(str(model))
+    print(f"Model size: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
 
     from collections import OrderedDict
     state_dict = torch.load("checkpoints/%s/best_%s_model.pth" % (args.exp_name, args.model_type),
