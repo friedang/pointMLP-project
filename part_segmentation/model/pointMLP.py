@@ -172,8 +172,8 @@ class LocalGrouper(nn.Module):
 
         # fps_idx = torch.multinomial(torch.linspace(0, N - 1, steps=N).repeat(B, 1).to(xyz.device), num_samples=self.groups, replacement=False).long()
         # fps_idx = farthest_point_sample(xyz, self.groups).long()
-        # fps_idx = pointnet2_utils.furthest_point_sample(xyz, self.groups).long()  # [B, npoint]
-        fps_idx = random_sampling(xyz, self.groups).long()
+        fps_idx = pointnet2_utils.furthest_point_sample(xyz, self.groups).long()  # [B, npoint]
+        # fps_idx = random_sampling(xyz, self.groups).long()
         new_xyz = index_points(xyz, fps_idx)  # [B, npoint, 3]
         new_points = index_points(points, fps_idx)  # [B, npoint, d]
 
@@ -466,7 +466,7 @@ class PointMLP(nn.Module):
             else:
                 self.gmp_map_list.append(nn.Sequential(
                     ConvBNReLU1D(en_dim, gmp_dim, bias=bias, activation=activation),
-                    SelfAttention(gmp_dim, gmp_dim))
+                    SelfAttention(gmp_dim, gmp_dim)))
             i += 1
         self.gmp_map_end = ConvBNReLU1D(gmp_dim * len(en_dims), gmp_dim, bias=bias,
                                         activation=activation)
