@@ -4,57 +4,50 @@ Date: Nov 2019
 """
 import argparse
 import os
-from data_utils.S3DISDataLoader import ScannetDatasetWholeScene
+from util.S3DISDataLoader import S3DISDataset,ScannetDatasetWholeScene
 import model as models
-from data_utils.indoor3d_util import g_label2color
+
 import torch
 import logging
 from pathlib import Path
-import sys
-import importlib
 from tqdm import tqdm
-import provider
 import numpy as np
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-ROOT_DIR = BASE_DIR
-sys.path.append(os.path.join(ROOT_DIR, 'models'))
-
-classes_str = ['ceiling', 'floor', 'wall', 'beam', 'column', 'window', 'door', 'table', 'chair', 'sofa', 'bookcase',
+classes = ['ceiling', 'floor', 'wall', 'beam', 'column', 'window', 'door', 'table', 'chair', 'sofa', 'bookcase',
            'board', 'clutter']
-
-rgb_values = [
-    (255, 0, 0),      # Red
-    (0, 255, 0),      # Lime Green
-    (0, 0, 255),      # Blue
-    (255, 255, 0),    # Yellow
-    (255, 0, 255),    # Magenta
-    (0, 255, 255),    # Cyan
-    (128, 0, 0),      # Maroon
-    (0, 128, 0),      # Green
-    (0, 0, 128),      # Navy
-    (255, 165, 0),    # Orange
-    (128, 0, 128),    # Purple
-    (0, 128, 128),    # Teal
-    (192, 192, 192)   # Silver
-]
-class2label = {cls: i for i, cls in enumerate(classes_str)}
+class2label = {cls: i for i, cls in enumerate(classes)}
 seg_classes = class2label
 seg_label_to_cat = {}
 for i, cat in enumerate(seg_classes.keys()):
     seg_label_to_cat[i] = cat
 
+g_class2label = {cls: i for i,cls in enumerate(classes)}
+g_class2color = {'ceiling':	[0,255,0],
+                 'floor':	[0,0,255],
+                 'wall':	[0,255,255],
+                 'beam':        [255,255,0],
+                 'column':      [255,0,255],
+                 'window':      [100,100,255],
+                 'door':        [200,200,100],
+                 'table':       [170,120,200],
+                 'chair':       [255,0,0],
+                 'sofa':        [200,100,100],
+                 'bookcase':    [10,200,100],
+                 'board':       [200,200,200],
+                 'clutter':     [50,50,50]}
+
 
 def parse_args():
     '''PARAMETERS'''
     parser = argparse.ArgumentParser('Model')
-    parser.add_argument('--batch_size', type=int, default=32, help='batch size in testing [default: 32]')
+    parser.add_argument('--batch_size', type=int, default=16, help='batch size in testing [default: 32]')
     parser.add_argument('--gpu', type=str, default='0', help='specify gpu device')
-    parser.add_argument('--num_point', type=int, default=4096, help='point number [default: 4096]')
-    parser.add_argument('--log_dir', type=str, required=True, help='experiment root')
+    parser.add_argument('--num_point', type=int, default=2048, help='point number [default: 4096]')
+    # parser.add_argument('--log_dir', type=str, required=True, help='experiment root')
     parser.add_argument('--visual', action='store_true', default=False, help='visualize result [default: False]')
     parser.add_argument('--test_area', type=int, default=5, help='area for testing, option: 1-6 [default: 5]')
     parser.add_argument('--num_votes', type=int, default=3, help='aggregate segmentation scores with voting [default: 5]')
+    parser.add_argument('--id', type=int, default='8')
     return parser.parse_args()
 
 
@@ -75,7 +68,7 @@ def main(args):
 
     '''HYPER PARAMETER'''
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
-    experiment_dir = 'log/sem_seg/' + args.log_dir
+    experiment_dir = 'figures'
     visual_dir = experiment_dir + '/visual/'
     visual_dir = Path(visual_dir)
     visual_dir.mkdir(exist_ok=True)
@@ -110,24 +103,10 @@ def main(args):
     print("WHOLE SCENE DATA SHAPE",whole_scene_data.shape)
     print("WHOLE SCENE LABEL SHAPE",whole_scene_label.shape)
 
-    num_points = whole_scene_data.shape[0]
-
-    color_target_list = []
-    for i in range(num_points):
-            color_target = rgb_values[int(whole_scene_label[i])]
-            r_target, g_target, b_target = color_target
-            color_target_list.append([r_target, g_target, b_target])
-
-    color_target_list = np.array(color_target_list)
-    seg_colored_points = np.hstack((whole_scene_data[:, :3], color_target_list))
-    fout = open( f"figures/{args.id}_target-whole-seg-color.obj", 'w')
-    for k in range(num_points):
-        fout.write('v %f %f %f %d %d %d\n' % (seg_colored_points[k][0],seg_colored_points[k][1],seg_colored_points[k][2],seg_colored_points[k][3],seg_colored_points[k][4],seg_colored_points[k][5]))
-
     print("===> Create model...")
     num_part = 13
-    device = torch.device("cuda" if args.cuda else "cpu")
-    model = models.__dict__[args.model](num_part).to(device)
+    device = torch.device("cuda") # if args.cuda else "cpu")
+    model = models.__dict__["pointMLP"](num_part).to(device)
     model.eval()
     print("===> Load checkpoint...")
 
