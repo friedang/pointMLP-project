@@ -31,15 +31,29 @@ pip install pointnet2_ops_lib/.
 ### Scene segmentation S3DIS
 
 - Make data folder under part_segmentation/data
-- Download the S3DIS dataset to that folder and save it as custom_s3
-
+- Download our subsample of S3DIS dataset from https://drive.google.com/drive/folders/1CW5qicxlE5tkpRiczTI84qDZxQojymD0?usp=share_link
+- Download the S3DIS dataset to that folder and save it as custom_s3 (arrange root path in main.py accordingly).
+- To perform evaluation please download model checkpoints from the same drive link and place it under /checkpoints folder (arrange paths accoringly).
+  
 - Train & Test pointMLP
 ```bash
 # train pointMLP
 cd part_segmentation
 python main.py --model pointMLP
 # please add other paramemters as you wish.
+# eval pointMLP
+python main.py --model pointMLP --eval True
 ```
+- Visualize pointMLP on S3DIS dataset
+```bash
+# visualize pointMLP
+cd part_segmentation
+python visualize_test.py --log_dir pointmlp --test_area 5 --visual
+# make sure that you have log/sem_seg/pointmlp/visual & log/sem_seg/pointmlp/logs folders created and correct checkpoint in checkpoints folder.
+```
+visualize_test.py saves .obj files inside log folder for 11 test instances with gt and predictions. To visualize these .obj files we have another script open3d_show_obj.py (arrange the .obj file path accordingly).
+Beware that Meshlab shows all points in white color thus it is recomended to use open3d_show_obj.py.
+
 
 ### Part segmentation ShapeNet
 
