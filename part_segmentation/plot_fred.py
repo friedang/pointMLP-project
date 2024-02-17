@@ -35,6 +35,7 @@ g_class2color = {'ceiling':	[0,255,0],
                  'bookcase':    [10,200,100],
                  'board':       [200,200,200],
                  'clutter':     [50,50,50]}
+g_label2color = {classes.index(cls): g_class2color[cls] for cls in classes}
 
 
 def parse_args():
@@ -115,7 +116,7 @@ def main(args):
     from collections import OrderedDict
     # state_dict = torch.load("checkpoints/%s/best_%s_model.pth" % (args.exp_name, args.model_type),
     #                         map_location=torch.device('cpu'))['model']
-    state_dict = torch.load("/checkpoints/pointMLP_introduceUpsampling/best_acc_model.pth",
+    state_dict = torch.load("./checkpoints/pointMLP_introduceUpsampling/best_acc_model.pth",
                             map_location=torch.device('cpu'))['model']
 
     # state_dict = torch.load("checkpoints/pointMLP_demo1/best_insiou_model.pth",
@@ -127,7 +128,7 @@ def main(args):
     model.load_state_dict(new_state_dict, strict=False)
 
     # Evaluation
-    batch_idx = 0
+    batch_idx = args.id
     scene_id = TEST_DATASET_WHOLE_SCENE.file_list
     scene_id = [x[:-4] for x in scene_id]
 
@@ -167,12 +168,25 @@ def main(args):
                 batch_label[0:real_batch_size, ...] = scene_label[start_idx:end_idx, ...]
                 batch_point_index[0:real_batch_size, ...] = scene_point_index[start_idx:end_idx, ...]
                 batch_smpw[0:real_batch_size, ...] = scene_smpw[start_idx:end_idx, ...]
-                batch_data[:, :, 3:6] /= 1.0
 
-                torch_data = torch.Tensor(batch_data)
-                torch_data = torch_data.float().cuda()
-                torch_data = torch_data.transpose(2, 1)
-                seg_pred, _ = model(torch_data)
+                batch_data[:, :, 3:6] /= 1.0
+                whole_points = batch_data[:,:3]
+                whole_color = batch_data[:,3:]
+                whole_target = whole_scene_label
+                whole_normal = whole_points / TEST_DATASET_WHOLE_SCENE.room_coord_max[5]
+
+                whole_points = torch.tensor(whole_points).unsqueeze(dim=0)
+                whole_color = torch.tensor(whole_color).unsqueeze(dim=0)
+                whole_target = torch.tensor(whole_target).unsqueeze(dim=0)
+                whole_normal = torch.tensor(whole_normal).unsqueeze(dim=0)
+
+                whole_points = whole_points.transpose(2,1)
+                whole_color = whole_color.transpose(2, 1)
+                whole_normal = whole_normal.transpose(2, 1)
+                whole_points, whole_target, whole_color, whole_normal = whole_points.cuda(non_blocking=True), whole_target.cuda(non_blocking=True), whole_color.cuda(non_blocking=True) ,whole_normal.cuda(non_blocking=True)
+
+
+                seg_pred, _ = model(whole_points, whole_normal, whole_color)
                 batch_pred_label = seg_pred.contiguous().cpu().data.max(2)[1].numpy()
 
                 vote_label_pool = add_vote(vote_label_pool, batch_point_index[0:real_batch_size, ...],
