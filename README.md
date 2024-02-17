@@ -52,7 +52,9 @@ python visualize_test.py --log_dir pointmlp --test_area 5 --visual
 # make sure that you have log/sem_seg/pointmlp/visual & log/sem_seg/pointmlp/logs folders created and correct checkpoint in checkpoints folder.
 ```
 visualize_test.py saves .obj files inside log folder for 11 test instances with gt and predictions. To visualize these .obj files we have another script open3d_show_obj.py (arrange the .obj file path accordingly).
-Beware that Meshlab shows all points in white color thus it is recomended to use open3d_show_obj.py.
+Beware that Meshlab shows all points in white color thus it is recomended to use open3d_show_obj.py. Example .obj files are placed in the google drive link.
+
+P.S: The visualization and dataloader codes are based on https://github.com/yanx27/Pointnet_Pointnet2_pytorch and modified according to our project needs.
 
 
 ### Part segmentation ShapeNet
