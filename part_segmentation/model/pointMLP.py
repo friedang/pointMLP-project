@@ -361,22 +361,21 @@ class SelfAttention(nn.Module):
 
 
 class MultiHeadAttention(nn.Module):
-    def __init__(self, input_dim, output_dim, anchors, num_heads=1, no_pooling=False):
+    def __init__(self, input_dim, output_dim, feat_dim, num_heads=1, dim_reduction=False):
         super(MultiHeadAttention, self).__init__()
-        # self.head_dim = output_dim // num_heads
         self.num_heads = num_heads
 
         # Initialize multiple instances of SelfAttention
         self.attention_heads = nn.ModuleList([
             SelfAttention(input_dim, output_dim, 1, 1) for _ in range(num_heads)
         ])
-        if no_pooling:
+        if not dim_reduction:
             self.fc_concat = nn.Sequential(
-                nn.Linear(anchors * num_heads, 2048))
+                nn.Linear(feat_dim * num_heads, 2048))
         else:
             self.fc_concat = nn.Sequential(
-                nn.Linear(anchors * num_heads, anchors * num_heads // 2),
-                nn.Linear(anchors * num_heads, 1),)
+                nn.Linear(feat_dim * num_heads, feat_dim * num_heads // 2),
+                nn.Linear(feat_dim * num_heads, 1),)
 
     def forward(self, input_tensor):
         # Compute attention for each head
@@ -451,18 +450,16 @@ class PointMLP(nn.Module):
         # color mapping
         self.col_map = nn.Sequential(
             ConvBNReLU1D(3, col_dim, bias=bias, activation=activation),
-            # ConvBNReLU1D(col_dim, col_dim, bias=bias, activation=activation),
-            # MultiHeadAttention(col_dim, col_dim, anchors=2048, no_pooling=True)
         )
         # global max pooling mapping
         self.gmp_map_list = nn.ModuleList()
-        feat_sizes = [8, 32, 128, 512, 2048]
+        feat_dims = [8, 32, 128, 512, 2048]
         i = 0
         for en_dim in en_dims:
-            if feat_sizes[i] in [512, 2048]:
+            if feat_dims[i] in [512, 2048]:
                 self.gmp_map_list.append(nn.Sequential(
                     ConvBNReLU1D(en_dim, gmp_dim, bias=bias, activation=activation),
-                    MultiHeadAttention(gmp_dim, gmp_dim, anchors=feat_sizes[i], no_pooling=True)))
+                    MultiHeadAttention(gmp_dim, gmp_dim, feat_dim=feat_dims[i])))
             else:
                 self.gmp_map_list.append(nn.Sequential(
                     ConvBNReLU1D(en_dim, gmp_dim, bias=bias, activation=activation),
@@ -481,7 +478,6 @@ class PointMLP(nn.Module):
         )
         self.en_dims = en_dims
 
-    #def forward(self, x, norm_plt, cls_label):
     def forward(self, x, norm_plt, color):
         xyz = x.permute(0, 2, 1)
         x = torch.cat([x,norm_plt],dim=1)
@@ -510,16 +506,13 @@ class PointMLP(nn.Module):
         gmp_list = []
         for i in range(len(x_list)):
             gmp_list.append(self.gmp_map_list[i](x_list[i]))
-            # Use the following with max pooling instead if no_pooling=False in Multihead-Attention
-            # gmp_list.append(F.adaptive_max_pool1d(self.gmp_map_list[i](x_list[i]), 1))
         gmp_list = [gmp.repeat([1, 1, x.shape[-1] // gmp.shape[-1]]) if gmp.shape[-1] != x.shape[-1] else gmp
                    for gmp in gmp_list]
         global_context = self.gmp_map_end(torch.cat(gmp_list, dim=1)) # [b, gmp_dim, 1]
 
-        #here is the cls_token
+        # get and add color features
         color_context = self.col_map(color)
         x = torch.cat([x, global_context, color_context], dim=1)
-        # x = torch.cat([x, global_context.repeat([1, 1, x.shape[-1]])], dim=1)
         x = self.classifier(x)
         x = F.log_softmax(x, dim=1)
         x = x.permute(0, 2, 1)
