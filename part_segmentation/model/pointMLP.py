@@ -394,7 +394,7 @@ class PointMLP(nn.Module):
                  dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
                  k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
                  de_dims=[512, 256, 128, 128], de_blocks=[2,2,2,2],
-                 gmp_dim=64,col_dim=64, **kwargs):
+                 gmp_dim=64, col_dim=64, feat_dims=[8, 32, 128, 512, 2048], **kwargs):
         super(PointMLP, self).__init__()
         self.stages = len(pre_blocks)
         self.class_num = num_classes
@@ -408,6 +408,7 @@ class PointMLP(nn.Module):
         last_channel = embed_dim
         anchor_points = self.points
         en_dims = [last_channel]
+        self.feat_dims = feat_dims
         ### Building Encoder #####
         for i in range(len(pre_blocks)):
             out_channel = last_channel * dim_expansion[i]
@@ -453,13 +454,12 @@ class PointMLP(nn.Module):
         )
         # global max pooling mapping
         self.gmp_map_list = nn.ModuleList()
-        feat_dims = [8, 32, 128, 512, 2048]
         i = 0
         for en_dim in en_dims:
-            if feat_dims[i] in [512, 2048]:
+            if self.feat_dims[i] in [512, 2048]:
                 self.gmp_map_list.append(nn.Sequential(
                     ConvBNReLU1D(en_dim, gmp_dim, bias=bias, activation=activation),
-                    MultiHeadAttention(gmp_dim, gmp_dim, feat_dim=feat_dims[i])))
+                    MultiHeadAttention(gmp_dim, gmp_dim, feat_dim=self.feat_dims[i])))
             else:
                 self.gmp_map_list.append(nn.Sequential(
                     ConvBNReLU1D(en_dim, gmp_dim, bias=bias, activation=activation),
